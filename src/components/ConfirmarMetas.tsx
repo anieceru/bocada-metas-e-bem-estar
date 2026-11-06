@@ -20,7 +20,7 @@ export function ConfirmarMetas({
   onConfirmar,
   limites,
 }: {
-  limites?: Record<ChaveMeta, { min: number; max: number }>;
+  limites?: Record<ChaveMeta, { min: number; max: number }> | undefined;
   aberto: boolean;
   chaves: ChaveMeta[];
   metas: Partial<Metas>;

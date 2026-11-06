@@ -19,7 +19,7 @@ export function MetasForm({
   extra,
   limites,
 }: {
-  limites?: Limites;
+  limites?: Limites | undefined;
   inicial: Partial<Metas>;
   rotuloSalvar: string;
   onSalvar: (m: Metas) => Promise<void>;
