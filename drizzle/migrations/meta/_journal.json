@@ -29,6 +29,20 @@
       "when": 1793987237333,
       "tag": "0003_catalogo_usda_industrializados",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794000616458,
+      "tag": "0004_busca_usda_rapida",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794000685388,
+      "tag": "0005_reconstruir_indice_busca_usda",
+      "breakpoints": true
     }
   ]
 }

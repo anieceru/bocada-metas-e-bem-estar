@@ -225,7 +225,7 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
           <Button onClick={salvar} disabled={salvando} className="h-11 w-full rounded-xl">Registrar</Button>
         </div>
       )}
-      <p className="mt-4 text-[11px] text-muted-foreground">{fonte === "taco" ? "Valores: TACO 4ª ed., NEPA/UNICAMP." : "USDA FoodData Central · Branded Foods · seleção inicial de 30 produtos · edição 29/10/2026. Produtos americanos; nomes originais. Confira o rótulo: fórmulas podem variar por país."}</p>
+      <p className="mt-4 text-[11px] text-muted-foreground">{fonte === "taco" ? "Valores: TACO 4ª ed., NEPA/UNICAMP." : "USDA FoodData Central · Branded Foods · cerca de 450 mil produtos · edição 29/10/2026. Produtos americanos; nomes originais. Confira o rótulo: fórmulas podem variar por país."}</p>
     </section>
   );
 }
