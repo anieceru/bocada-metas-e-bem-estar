@@ -159,7 +159,7 @@ function Onboarding() {
         <p className="text-xs text-muted-foreground">Serve só para sugerir metas no futuro.</p>
         <div className="mt-2 grid grid-cols-3 gap-2">
           {[["feminino", "Feminino"], ["masculino", "Masculino"], ["outro", "Outro"]].map(([v, l]) => (
-            <Opcao key={v} ativo={sexo === v} onClick={() => setSexo(sexo === v ? null : v)}>{l}</Opcao>
+            <Opcao key={v} ativo={sexo === v} onClick={() => setSexo(sexo === v ? null : (v as string))}>{l}</Opcao>
           ))}
         </div>
         <p className="mt-6 text-sm font-medium">Objetivo</p>

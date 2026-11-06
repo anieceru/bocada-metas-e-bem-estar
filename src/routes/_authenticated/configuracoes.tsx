@@ -73,15 +73,15 @@ function Config() {
   async function salvarPerfil(e: React.FormEvent) {
     e.preventDefault();
     const copoN = Number(copo);
-    if (!(copoN >= 50 && copoN <= 2000)) return toast.error("Tamanho do copo entre 50 e 2000 ml.");
-    const upd: Record<string, unknown> = { tom, copo_ml: copoN };
+    if (!(copoN >= 50 && copoN <= 2000)) return void toast.error("Tamanho do copo entre 50 e 2000 ml.");
+    const upd: { tom: string; copo_ml: number; idade?: number; peso_kg?: number | null; altura_cm?: number | null; sexo?: string | null; objetivo?: string | null } = { tom, copo_ml: copoN };
     if (temConsent) {
       const i = num(idade);
-      if (i == null || i < 18 || i > 120) return toast.error("Informe uma idade válida (18 ou mais).");
+      if (i == null || i < 18 || i > 120) return void toast.error("Informe uma idade válida (18 ou mais).");
       Object.assign(upd, { idade: i, peso_kg: num(peso), altura_cm: num(altura), sexo, objetivo });
     }
     const { error } = await supabase.from("profiles").update(upd).eq("id", uid);
-    if (error) return toast.error("Não foi possível salvar. Confira os valores.");
+    if (error) return void toast.error("Não foi possível salvar. Confira os valores.");
     toast.success("Perfil salvo.");
     recarregar();
   }
@@ -91,7 +91,7 @@ function Config() {
       consentimento_saude_em: new Date().toISOString(),
       consentimento_saude_versao: VERSAO_CONSENTIMENTO,
     }).eq("id", uid);
-    if (error) return toast.error("Não foi possível salvar.");
+    if (error) return void toast.error("Não foi possível salvar.");
     toast.success("Autorização registrada.");
     setNovoConsent(false);
     recarregar();
@@ -99,7 +99,7 @@ function Config() {
 
   async function retirarConsentimento() {
     const { error } = await supabase.from("profiles").update({ consentimento_saude_em: null }).eq("id", uid);
-    if (error) return toast.error("Não foi possível retirar agora.");
+    if (error) return void toast.error("Não foi possível retirar agora.");
     setIdade(""); setPeso(""); setAltura(""); setSexo(null); setObjetivo(null);
     toast.success("Autorização retirada e dados de saúde apagados.");
     recarregar();

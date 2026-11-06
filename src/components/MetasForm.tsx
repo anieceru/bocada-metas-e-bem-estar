@@ -29,7 +29,7 @@ export function MetasForm({
   const [pendente, setPendente] = useState<Metas | null>(null);
   const [salvando, setSalvando] = useState(false);
 
-  const metas = Object.fromEntries(CHAVES_METAS.map((k) => [k, paraNumero(vals[k])])) as Metas;
+  const metas = Object.fromEntries(CHAVES_METAS.map((k) => [k, paraNumero(vals[k] ?? "")])) as Metas;
   const fora = metasForaDoUsual(metas);
 
   async function salvar(m: Metas) {
