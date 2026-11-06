@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+
+## Bocada
+
+- Health fields on `profiles` are nulled by a DB trigger whenever `consentimento_saude_em` is null, and `metas` writes require consent via RLS — never rely on the client alone to enforce consent.
+- Goal "out of usual range" thresholds and the consent text version live in `src/lib/config.ts`, the single place to adjust them.
+- Account deletion runs in a server function using the admin client after `requireSupabaseAuth`; user id comes only from the verified session.
