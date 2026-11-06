@@ -6,4 +6,6 @@
 - [x] Tabela TACO importada (597 alimentos, com atribuição) e busca local
 - [x] Entrada por voz (ditado do navegador) com digitação como alternativa, salvando no diário
 - [x] Preencher e-mail de contato de privacidade
-- [ ] Importar catálogo americano de industrializados USDA e integrar à busca local com atribuição
+- [x] Integrar busca local USDA com atribuição e importar seleção inicial de 30 produtos
+- [ ] Importar catálogo USDA completo (448.813 produtos preparados; importação em lote bloqueada pelas permissões gerenciadas)
+- [ ] Verificar registro USDA com sessão real (nenhuma conta disponível para autenticar o teste)

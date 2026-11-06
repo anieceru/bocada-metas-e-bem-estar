@@ -9,9 +9,10 @@ import { perfilQuery } from "@/lib/profile";
 import { registrosDoDiaQuery } from "@/lib/registros";
 import { hojeISO } from "@/lib/diario";
 import { LIMITES_METAS } from "@/lib/config";
+import { privatePageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/hoje")({
-  head: () => ({ meta: [{ title: "Hoje — Bocada" }, { name: "robots", content: "noindex" }] }),
+  head: () => privatePageHead("Hoje", "Registre refeições com alimentos da TACO e industrializados USDA no Bocada."),
   loader: ({ context }) => context.queryClient.ensureQueryData(perfilQuery),
   component: Hoje,
 });

@@ -11,9 +11,10 @@ import { MetasForm } from "@/components/MetasForm";
 import { excluirConta } from "@/lib/conta.functions";
 import { OBJETIVOS, TEXTO_CONSENTIMENTO, VERSAO_CONSENTIMENTO, type Metas } from "@/lib/config";
 import { toast } from "sonner";
+import { privatePageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => ({ meta: [{ title: "Primeiros passos — Bocada" }, { name: "robots", content: "noindex" }] }),
+  head: () => privatePageHead("Primeiros passos", "Escolha suas preferências e autorizações para começar no Bocada."),
   component: Onboarding,
 });
 

@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { perfilQuery } from "@/lib/profile";
 import { CHAVES_LIMITES_AJUSTAVEIS, LIMITES_METAS, limitesEfetivos } from "@/lib/config";
+import { privatePageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/limites")({
-  head: () => ({ meta: [{ title: "Limites de alerta — Bocada" }, { name: "robots", content: "noindex" }] }),
+  head: () => privatePageHead("Limites de alerta", "Ajuste seus limites de alerta para macros e água no Bocada."),
   loader: ({ context }) => context.queryClient.ensureQueryData(perfilQuery),
   component: Limites,
 });
