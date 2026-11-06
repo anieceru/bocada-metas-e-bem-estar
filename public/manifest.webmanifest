@@ -1,0 +1,10 @@
+{
+  "name": "Bocada",
+  "short_name": "Bocada",
+  "lang": "pt-BR",
+  "start_url": "/hoje",
+  "display": "standalone",
+  "background_color": "#FBFAF7",
+  "theme_color": "#2F6BEA",
+  "icons": [{ "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" }]
+}
