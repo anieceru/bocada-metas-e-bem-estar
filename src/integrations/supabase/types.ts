@@ -14,13 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      metas: {
+        Row: {
+          agua_ml: number | null
+          atualizado_em: string
+          carboidratos_g: number | null
+          gorduras_g: number | null
+          id: string
+          kcal: number | null
+          proteinas_g: number | null
+          user_id: string
+        }
+        Insert: {
+          agua_ml?: number | null
+          atualizado_em?: string
+          carboidratos_g?: number | null
+          gorduras_g?: number | null
+          id?: string
+          kcal?: number | null
+          proteinas_g?: number | null
+          user_id: string
+        }
+        Update: {
+          agua_ml?: number | null
+          atualizado_em?: string
+          carboidratos_g?: number | null
+          gorduras_g?: number | null
+          id?: string
+          kcal?: number | null
+          proteinas_g?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          altura_cm: number | null
+          atualizado_em: string
+          consentimento_saude_em: string | null
+          consentimento_saude_versao: string | null
+          copo_ml: number
+          criado_em: string
+          id: string
+          idade: number | null
+          objetivo: string | null
+          onboarding_concluido: boolean
+          peso_kg: number | null
+          sexo: string | null
+          tema: string
+          tom: string
+        }
+        Insert: {
+          altura_cm?: number | null
+          atualizado_em?: string
+          consentimento_saude_em?: string | null
+          consentimento_saude_versao?: string | null
+          copo_ml?: number
+          criado_em?: string
+          id: string
+          idade?: number | null
+          objetivo?: string | null
+          onboarding_concluido?: boolean
+          peso_kg?: number | null
+          sexo?: string | null
+          tema?: string
+          tom?: string
+        }
+        Update: {
+          altura_cm?: number | null
+          atualizado_em?: string
+          consentimento_saude_em?: string | null
+          consentimento_saude_versao?: string | null
+          copo_ml?: number
+          criado_em?: string
+          id?: string
+          idade?: number | null
+          objetivo?: string | null
+          onboarding_concluido?: boolean
+          peso_kg?: number | null
+          sexo?: string | null
+          tema?: string
+          tom?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      tem_consentimento_saude: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
