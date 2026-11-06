@@ -12,8 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ContatoPrivacidadeRouteImport } from './routes/contato-privacidade'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedHojeRouteImport } from './routes/_authenticated/hoje'
@@ -33,14 +36,29 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContatoPrivacidadeRoute = ContatoPrivacidadeRouteImport.update({
+  id: '/contato-privacidade',
+  path: '/contato-privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
   id: '/esqueci-senha',
   path: '/esqueci-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedConfiguracoesRoute =
@@ -68,8 +86,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/contato-privacidade': typeof ContatoPrivacidadeRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/hoje': typeof AuthenticatedHojeRoute
@@ -78,8 +99,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/contato-privacidade': typeof ContatoPrivacidadeRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/hoje': typeof AuthenticatedHojeRoute
@@ -90,8 +114,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/contato-privacidade': typeof ContatoPrivacidadeRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/hoje': typeof AuthenticatedHojeRoute
@@ -102,8 +129,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/contato-privacidade'
     | '/esqueci-senha'
+    | '/privacidade'
     | '/reset-password'
+    | '/termos'
     | '/configuracoes'
     | '/historico'
     | '/hoje'
@@ -112,8 +142,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/contato-privacidade'
     | '/esqueci-senha'
+    | '/privacidade'
     | '/reset-password'
+    | '/termos'
     | '/configuracoes'
     | '/historico'
     | '/hoje'
@@ -123,8 +156,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/contato-privacidade'
     | '/esqueci-senha'
+    | '/privacidade'
     | '/reset-password'
+    | '/termos'
     | '/_authenticated/configuracoes'
     | '/_authenticated/historico'
     | '/_authenticated/hoje'
@@ -135,8 +171,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ContatoPrivacidadeRoute: typeof ContatoPrivacidadeRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermosRoute: typeof TermosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -162,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contato-privacidade': {
+      id: '/contato-privacidade'
+      path: '/contato-privacidade'
+      fullPath: '/contato-privacidade'
+      preLoaderRoute: typeof ContatoPrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/esqueci-senha': {
       id: '/esqueci-senha'
       path: '/esqueci-senha'
@@ -169,11 +215,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EsqueciSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/configuracoes': {
@@ -228,8 +288,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ContatoPrivacidadeRoute: ContatoPrivacidadeRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermosRoute: TermosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
