@@ -5,4 +5,7 @@
 - [x] Tela para cada pessoa ajustar limites de alerta de macros e água
 - [x] Tabela TACO importada (597 alimentos, com atribuição) e busca local
 - [x] Entrada por voz (ditado do navegador) com digitação como alternativa, salvando no diário
-- [ ] Preencher e-mail de contato de privacidade (aguardando a dona do app)
+- [x] Preencher e-mail de contato de privacidade
+- [x] Integrar busca local USDA com atribuição e importar seleção inicial de 30 produtos
+- [ ] Importar catálogo USDA completo (448.813 produtos preparados; importação em lote bloqueada pelas permissões gerenciadas)
+- [ ] Verificar registro USDA com sessão real (nenhuma conta disponível para autenticar o teste)

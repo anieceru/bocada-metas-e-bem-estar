@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { History } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { historicoQuery } from "@/lib/registros";
+import { privatePageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/historico")({
-  head: () => ({ meta: [{ title: "Histórico — Bocada" }, { name: "robots", content: "noindex" }] }),
+  head: () => privatePageHead("Histórico", "Acompanhe os registros alimentares dos últimos 30 dias no Bocada."),
   component: Historico,
 });
 

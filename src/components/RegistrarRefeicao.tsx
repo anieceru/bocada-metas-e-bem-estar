@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  calcularNutrientes, dividirItens, hojeISO, interpretarItem, normalizar, type AlimentoTaco,
+  calcularNutrientes, dividirItens, hojeISO, interpretarItem, normalizar, referenciaAlimento, type AlimentoTaco,
 } from "@/lib/diario";
 
 type SR = {
@@ -24,10 +24,11 @@ function criarReconhecimento(): SR | null {
 
 type Item = { termo: string; gramas: string; opcoes: AlimentoTaco[]; escolhido: number | null };
 
-async function buscar(termo: string): Promise<AlimentoTaco[]> {
+async function buscar(termo: string, fonte: "taco" | "usda"): Promise<AlimentoTaco[]> {
   const q = normalizar(termo).replace(/[.,]/g, " ");
   if (!q) return [];
-  const { data } = await supabase.rpc("buscar_alimentos", { q });
+  const { data, error } = await supabase.rpc("buscar_alimentos_catalogo", { q, fonte });
+  if (error) throw error;
   return (data ?? []) as AlimentoTaco[];
 }
 
@@ -41,6 +42,8 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
   const [itens, setItens] = useState<Item[]>([]);
   const [origem, setOrigem] = useState<"voz" | "digitado">("digitado");
   const [salvando, setSalvando] = useState(false);
+  const [fonte, setFonte] = useState<"taco" | "usda">("taco");
+  const [buscando, setBuscando] = useState(false);
   const rec = useRef<SR | null>(null);
   const finalRef = useRef("");
 
@@ -54,13 +57,20 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
     setOrigem(via);
     const partes = dividirItens(frase).map(interpretarItem).filter((p) => p.termo);
     if (!partes.length) return void toast("Não entendi os alimentos. Tente de novo ou digite.");
+    setBuscando(true);
+    try {
     const novos = await Promise.all(
       partes.map(async (p) => {
-        const opcoes = await buscar(p.termo);
+        const opcoes = await buscar(p.termo, fonte);
         return { termo: p.termo, gramas: String(p.gramas ?? 100), opcoes, escolhido: opcoes[0]?.id ?? null };
       }),
     );
     setItens(novos);
+    } catch {
+      toast.error("Não foi possível buscar alimentos. Tente de novo.");
+    } finally {
+      setBuscando(false);
+    }
   }
 
   function ouvir() {
@@ -74,8 +84,10 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
     r.onresult = (e) => {
       let fin = "", tmp = "";
       for (let i = 0; i < e.results.length; i++) {
-        const res = e.results[i]!;
-        if (res.isFinal) fin += res[0]!.transcript; else tmp += res[0]!.transcript;
+        const res = e.results[i];
+        const transcript = res?.[0]?.transcript;
+        if (!res || !transcript) continue;
+        if (res.isFinal) fin += transcript; else tmp += transcript;
       }
       finalRef.current = fin;
       setParcial(fin + tmp);
@@ -99,7 +111,9 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
   }
 
   async function trocarBusca(i: number, termo: string) {
-    const opcoes = await buscar(termo);
+    let opcoes: AlimentoTaco[];
+    try { opcoes = await buscar(termo, fonte); }
+    catch { return void toast.error("Não foi possível buscar alimentos. Tente de novo."); }
     setItens((arr) => arr.map((it, j) => (j === i ? { ...it, termo, opcoes, escolhido: opcoes[0]?.id ?? null } : it)));
   }
 
@@ -108,7 +122,8 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
       const a = it.opcoes.find((o) => o.id === it.escolhido);
       const g = Number(it.gramas.replace(",", "."));
       if (!a || !(g > 0 && g <= 5000)) return [];
-      return [{ user_id: userId, dia: hojeISO(), alimento_id: a.id, descricao: a.descricao, gramas: g, origem, ...calcularNutrientes(a, g) }];
+      const descricao = a.fonte === "usda" && a.marca ? `${a.descricao} · ${a.marca}` : a.descricao;
+      return [{ user_id: userId, dia: hojeISO(), ...referenciaAlimento(a), descricao, gramas: g, origem, ...calcularNutrientes(a, g) }];
     });
     if (!linhas.length) return void toast("Escolha pelo menos um alimento com quantidade válida.");
     setSalvando(true);
@@ -122,6 +137,11 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
 
   return (
     <section className="rounded-2xl border bg-surface p-5">
+      <div className="mb-4 flex gap-2" role="group" aria-label="Fonte dos alimentos">
+        {([ ["taco", "TACO"], ["usda", "Industrializados · USDA"] ] as const).map(([v, label]) => (
+          <Button key={v} type="button" variant={fonte === v ? "default" : "outline"} aria-pressed={fonte === v} disabled={buscando || ouvindo || salvando} className="min-w-0 flex-1 whitespace-normal text-xs" onClick={() => { setFonte(v); setItens([]); setTexto(""); setParcial(""); }}>{label}</Button>
+        ))}
+      </div>
       {modo === "voz" && suportaVoz ? (
         <div className="text-center">
           <button
@@ -148,7 +168,7 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
           <label htmlFor="o-que-comi" className="text-sm font-medium">O que você comeu?</label>
           <Textarea id="o-que-comi" rows={2} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="150 g de arroz, feijão e uma banana" />
           <div className="flex gap-2">
-            <Button type="submit" className="flex-1 rounded-xl">Buscar alimentos</Button>
+            <Button type="submit" disabled={buscando} className="flex-1 rounded-xl">{buscando ? "Buscando…" : "Buscar alimentos"}</Button>
             {suportaVoz && (
               <Button type="button" variant="outline" className="rounded-xl" onClick={() => setModo("voz")} aria-label="Usar voz">
                 <Mic className="h-4 w-4" aria-hidden />
@@ -175,16 +195,16 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
                   </button>
                 </div>
                 {it.opcoes.length === 0 ? (
-                  <p className="mt-2 text-xs text-muted-foreground">Nada encontrado na TACO. Tente outra palavra.</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{fonte === "taco" ? "Nada encontrado na TACO. Tente outra palavra." : "Nada encontrado no USDA. Tente o nome original ou a marca do produto."}</p>
                 ) : (
                   <div className="mt-2 grid grid-cols-[1fr_5.5rem] gap-2">
                     <select
                       aria-label="Alimento"
                       value={it.escolhido ?? ""}
                       onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, escolhido: Number(e.target.value) } : x)))}
-                      className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                      className="h-9 min-w-0 w-full rounded-md border border-input bg-background px-2 text-sm"
                     >
-                      {it.opcoes.map((o) => <option key={o.id} value={o.id}>{o.descricao}</option>)}
+                      {it.opcoes.map((o) => <option key={o.id} value={o.id}>{o.descricao}{o.marca ? ` · ${o.marca}` : ""}</option>)}
                     </select>
                     <div className="flex items-center gap-1">
                       <Input aria-label="Quantidade em gramas" inputMode="decimal" value={it.gramas} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, gramas: e.target.value } : x)))} className="h-9" />
@@ -192,6 +212,7 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
                     </div>
                   </div>
                 )}
+                {a?.fonte === "usda" && <p className="mt-2 break-words text-xs text-muted-foreground">{a.descricao} · {a.marca} · USDA{a.gtin_upc ? ` · UPC ${a.gtin_upc}` : ""}</p>}
                 {n && (
                   <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="rounded bg-estado-estimativa/15 px-1.5 py-0.5 font-medium text-estado-estimativa">Estimativa</span>
@@ -204,7 +225,7 @@ export function RegistrarRefeicao({ userId }: { userId: string }) {
           <Button onClick={salvar} disabled={salvando} className="h-11 w-full rounded-xl">Registrar</Button>
         </div>
       )}
-      <p className="mt-4 text-[11px] text-muted-foreground">Valores: TACO 4ª ed., NEPA/UNICAMP.</p>
+      <p className="mt-4 text-[11px] text-muted-foreground">{fonte === "taco" ? "Valores: TACO 4ª ed., NEPA/UNICAMP." : "USDA FoodData Central · Branded Foods · seleção inicial de 30 produtos · edição 29/10/2026. Produtos americanos; nomes originais. Confira o rótulo: fórmulas podem variar por país."}</p>
     </section>
   );
 }

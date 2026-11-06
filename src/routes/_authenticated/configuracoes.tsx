@@ -18,9 +18,10 @@ import { perfilQuery } from "@/lib/profile";
 import { excluirConta } from "@/lib/conta.functions";
 import { aplicarTema, lerTema, type Tema } from "@/lib/theme";
 import { limitesEfetivos, OBJETIVOS, TEXTO_CONSENTIMENTO, VERSAO_CONSENTIMENTO, type Metas } from "@/lib/config";
+import { privatePageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
-  head: () => ({ meta: [{ title: "Configurações — Bocada" }, { name: "robots", content: "noindex" }] }),
+  head: () => privatePageHead("Configurações", "Gerencie perfil, metas, privacidade e conta no Bocada."),
   loader: ({ context }) => context.queryClient.ensureQueryData(perfilQuery),
   component: Config,
 });

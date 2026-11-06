@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { calcularNutrientes, dividirItens, interpretarItem } from "@/lib/diario";
+import { calcularNutrientes, dividirItens, interpretarItem, referenciaAlimento } from "@/lib/diario";
 import { limitesEfetivos, metasForaDoUsual } from "@/lib/config";
 
 describe("diário", () => {
+  it("mantém a referência USDA separada da TACO ao registrar", () => {
+    const a = { id: 123456, descricao: "Produto USDA", kcal: 400, proteina_g: 10, lipideos_g: 20, carboidrato_g: 45, fonte: "usda" as const };
+    expect(referenciaAlimento(a)).toEqual({ alimento_id: null, usda_fdc_id: 123456 });
+    expect(calcularNutrientes(a, 25)).toEqual({ kcal: 100, proteinas_g: 2.5, gorduras_g: 5, carboidratos_g: 11.3 });
+  });
+  it("preserva a referência TACO dos alimentos existentes", () => {
+    expect(referenciaAlimento({ id: 1, descricao: "Arroz", kcal: 128, proteina_g: 2.5, lipideos_g: 0.2, carboidrato_g: 28 })).toEqual({ alimento_id: 1, usda_fdc_id: null });
+  });
   it("divide a fala em itens", () => {
     expect(dividirItens("150 gramas de arroz, feijão e uma banana")).toEqual(["150 gramas de arroz", "feijao", "uma banana"]);
   });

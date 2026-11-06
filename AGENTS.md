@@ -33,3 +33,5 @@ use the editor.
 - Health fields on `profiles` are nulled by a DB trigger whenever `consentimento_saude_em` is null, and `metas` writes require consent via RLS — never rely on the client alone to enforce consent.
 - Goal "out of usual range" thresholds and the consent text version live in `src/lib/config.ts`, the single place to adjust them.
 - Account deletion runs in a server function using the admin client after `requireSupabaseAuth`; user id comes only from the verified session.
+- Keep USDA branded foods in a separate local catalog and reference its FDC ids separately from TACO ids in diary entries, so existing entries and source attribution remain intact. Never turn missing USDA nutrients into zero.
+- Use the shared private-page metadata helper for authenticated content pages to keep page-specific social descriptions static and free of user health data.

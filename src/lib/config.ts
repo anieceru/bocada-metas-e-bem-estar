@@ -49,8 +49,8 @@ export function limitesEfetivos(personalizados: unknown): Limites {
   return base;
 }
 
-// E-mail de contato de privacidade (LGPD). PREENCHER.
-export const EMAIL_PRIVACIDADE = "[preencher@seudominio.com.br]";
+// E-mail de contato de privacidade (LGPD).
+export const EMAIL_PRIVACIDADE = "4niec0@gmail.com";
 
 const COMUNS = new Set([
   "12345678", "123456789", "1234567890", "password", "password1", "senha123", "senha1234",

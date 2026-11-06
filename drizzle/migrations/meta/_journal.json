@@ -22,6 +22,13 @@
       "when": 1793985172101,
       "tag": "0002_buscar_alimentos_ordem",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793987237333,
+      "tag": "0003_catalogo_usda_industrializados",
+      "breakpoints": true
     }
   ]
 }

@@ -50,6 +50,48 @@ export type Database = {
         }
         Relationships: []
       }
+      alimentos_usda: {
+        Row: {
+          busca: string
+          carboidrato_g: number
+          categoria: string | null
+          descricao: string
+          edicao: string
+          fdc_id: number
+          gtin_upc: string | null
+          kcal: number
+          lipideos_g: number
+          marca: string | null
+          proteina_g: number
+        }
+        Insert: {
+          busca: string
+          carboidrato_g: number
+          categoria?: string | null
+          descricao: string
+          edicao?: string
+          fdc_id: number
+          gtin_upc?: string | null
+          kcal: number
+          lipideos_g: number
+          marca?: string | null
+          proteina_g: number
+        }
+        Update: {
+          busca?: string
+          carboidrato_g?: number
+          categoria?: string | null
+          descricao?: string
+          edicao?: string
+          fdc_id?: number
+          gtin_upc?: string | null
+          kcal?: number
+          lipideos_g?: number
+          marca?: string | null
+          proteina_g?: number
+        }
+        Relationships: []
+      }
       metas: {
         Row: {
           agua_ml: number | null
@@ -158,6 +200,7 @@ export type Database = {
           kcal: number
           origem: string
           proteinas_g: number
+          usda_fdc_id: number | null
           user_id: string
         }
         Insert: {
@@ -172,6 +215,7 @@ export type Database = {
           kcal?: number
           origem?: string
           proteinas_g?: number
+          usda_fdc_id?: number | null
           user_id: string
         }
         Update: {
@@ -186,6 +230,7 @@ export type Database = {
           kcal?: number
           origem?: string
           proteinas_g?: number
+          usda_fdc_id?: number | null
           user_id?: string
         }
         Relationships: [
@@ -195,6 +240,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "alimentos_taco"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registros_usda_fdc_id_fkey"
+            columns: ["usda_fdc_id"]
+            isOneToOne: false
+            referencedRelation: "alimentos_usda"
+            referencedColumns: ["fdc_id"]
           },
           {
             foreignKeyName: "registros_user_id_fkey"
@@ -229,6 +281,20 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      buscar_alimentos_catalogo: {
+        Args: { fonte?: string; q: string }
+        Returns: {
+          carboidrato_g: number
+          descricao: string
+          fonte: string
+          gtin_upc: string
+          id: number
+          kcal: number
+          lipideos_g: number
+          marca: string
+          proteina_g: number
+        }[]
       }
       tem_consentimento_saude: { Args: { _uid: string }; Returns: boolean }
     }
