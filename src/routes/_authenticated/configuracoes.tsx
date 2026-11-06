@@ -114,7 +114,9 @@ function Config() {
 
   async function exportar() {
     const { data: fresh } = await qc.fetchQuery({ ...perfilQuery, staleTime: 0 }).then((d) => ({ data: d }));
+    const { data: registros } = await supabase.from("registros").select("dia, descricao, gramas, kcal, carboidratos_g, proteinas_g, gorduras_g, origem, criado_em").order("dia");
     const conteudo = {
+      registros: registros ?? [],
       exportado_em: new Date().toISOString(),
       conta: { id: fresh.user.id, email: fresh.user.email, criada_em: fresh.user.created_at },
       perfil: fresh.perfil,
