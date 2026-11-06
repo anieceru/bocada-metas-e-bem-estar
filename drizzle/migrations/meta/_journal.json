@@ -8,6 +8,13 @@
       "when": 1793983981826,
       "tag": "0000_bocada_base",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793984811723,
+      "tag": "0001_diario_taco_limites",
+      "breakpoints": true
     }
   ]
 }
