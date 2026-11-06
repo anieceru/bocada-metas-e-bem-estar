@@ -15,6 +15,13 @@
       "when": 1793984811723,
       "tag": "0001_diario_taco_limites",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793985172101,
+      "tag": "0002_buscar_alimentos_ordem",
+      "breakpoints": true
     }
   ]
 }
