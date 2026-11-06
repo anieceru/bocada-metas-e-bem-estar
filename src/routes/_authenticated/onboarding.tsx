@@ -68,7 +68,7 @@ function Onboarding() {
       const { error: e2 } = await supabase.from("metas").upsert({ user_id: u.user.id, ...metas }, { onConflict: "user_id" });
       if (e2) return void toast.error("Não foi possível salvar as metas.");
     }
-    await qc.invalidateQueries({ queryKey: ["perfil"] });
+    qc.removeQueries({ queryKey: ["perfil"] });
     navigate({ to: "/hoje", replace: true });
   }
 
