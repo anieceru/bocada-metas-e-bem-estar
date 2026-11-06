@@ -9,6 +9,8 @@ export const Route = createFileRoute("/termos")({
       <p>O Bocada é destinado a maiores de 18 anos.</p>
       <h2>Natureza do serviço</h2>
       <p>O Bocada é um diário alimentar. Os valores exibidos são estimativas e não substituem orientação de nutricionista ou médico.</p>
+      <h2>Fonte dos dados nutricionais</h2>
+      <p>Tabela Brasileira de Composição de Alimentos (TACO), 4ª edição revisada e ampliada. NEPA/UNICAMP, Campinas, 2011. Dados normalizados por brolesi/taco (licença MIT).</p>
       <h2>Sua conta</h2>
       <p>Você é responsável por manter sua senha em segurança. Pode excluir sua conta a qualquer momento em Configurações.</p>
       <h2>Alterações</h2>

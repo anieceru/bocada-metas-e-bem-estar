@@ -18,7 +18,9 @@ export function ConfirmarMetas({
   metas,
   onCancelar,
   onConfirmar,
+  limites,
 }: {
+  limites?: Record<ChaveMeta, { min: number; max: number }> | undefined;
   aberto: boolean;
   chaves: ChaveMeta[];
   metas: Partial<Metas>;
@@ -47,9 +49,10 @@ export function ConfirmarMetas({
               <ul className="list-disc pl-5">
                 {chaves.map((k) => {
                   const l = LIMITES_METAS[k];
+                  const f = limites?.[k] ?? l;
                   return (
                     <li key={k}>
-                      {l.nome}: {metas[k]} {l.unidade} (faixa comum: {l.min}–{l.max} {l.unidade})
+                      {l.nome}: {metas[k]} {l.unidade} (faixa comum: {f.min}–{f.max} {l.unidade})
                     </li>
                   );
                 })}

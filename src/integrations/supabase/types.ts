@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      alimentos_taco: {
+        Row: {
+          busca: string
+          carboidrato_g: number | null
+          categoria: string | null
+          descricao: string
+          fibra_g: number | null
+          id: number
+          kcal: number | null
+          lipideos_g: number | null
+          proteina_g: number | null
+        }
+        Insert: {
+          busca: string
+          carboidrato_g?: number | null
+          categoria?: string | null
+          descricao: string
+          fibra_g?: number | null
+          id: number
+          kcal?: number | null
+          lipideos_g?: number | null
+          proteina_g?: number | null
+        }
+        Update: {
+          busca?: string
+          carboidrato_g?: number | null
+          categoria?: string | null
+          descricao?: string
+          fibra_g?: number | null
+          id?: number
+          kcal?: number | null
+          lipideos_g?: number | null
+          proteina_g?: number | null
+        }
+        Relationships: []
+      }
       metas: {
         Row: {
           agua_ml: number | null
@@ -65,6 +101,7 @@ export type Database = {
           criado_em: string
           id: string
           idade: number | null
+          limites_alerta: Json | null
           objetivo: string | null
           onboarding_concluido: boolean
           peso_kg: number | null
@@ -81,6 +118,7 @@ export type Database = {
           criado_em?: string
           id: string
           idade?: number | null
+          limites_alerta?: Json | null
           objetivo?: string | null
           onboarding_concluido?: boolean
           peso_kg?: number | null
@@ -97,6 +135,7 @@ export type Database = {
           criado_em?: string
           id?: string
           idade?: number | null
+          limites_alerta?: Json | null
           objetivo?: string | null
           onboarding_concluido?: boolean
           peso_kg?: number | null
@@ -106,11 +145,91 @@ export type Database = {
         }
         Relationships: []
       }
+      registros: {
+        Row: {
+          alimento_id: number | null
+          carboidratos_g: number
+          criado_em: string
+          descricao: string
+          dia: string
+          gorduras_g: number
+          gramas: number
+          id: string
+          kcal: number
+          origem: string
+          proteinas_g: number
+          user_id: string
+        }
+        Insert: {
+          alimento_id?: number | null
+          carboidratos_g?: number
+          criado_em?: string
+          descricao: string
+          dia: string
+          gorduras_g?: number
+          gramas: number
+          id?: string
+          kcal?: number
+          origem?: string
+          proteinas_g?: number
+          user_id: string
+        }
+        Update: {
+          alimento_id?: number | null
+          carboidratos_g?: number
+          criado_em?: string
+          descricao?: string
+          dia?: string
+          gorduras_g?: number
+          gramas?: number
+          id?: string
+          kcal?: number
+          origem?: string
+          proteinas_g?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registros_alimento_id_fkey"
+            columns: ["alimento_id"]
+            isOneToOne: false
+            referencedRelation: "alimentos_taco"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registros_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      buscar_alimentos: {
+        Args: { q: string }
+        Returns: {
+          busca: string
+          carboidrato_g: number | null
+          categoria: string | null
+          descricao: string
+          fibra_g: number | null
+          id: number
+          kcal: number | null
+          lipideos_g: number | null
+          proteina_g: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "alimentos_taco"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       tem_consentimento_saude: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {

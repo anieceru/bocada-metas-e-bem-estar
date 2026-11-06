@@ -15,18 +15,39 @@ export type Metas = Record<ChaveMeta, number | null>;
 
 export const SEGUNDOS_CONFIRMACAO = 5;
 
-export function metasForaDoUsual(m: Partial<Metas>): ChaveMeta[] {
+export function metasForaDoUsual(
+  m: Partial<Metas>,
+  limites: Record<ChaveMeta, { min: number; max: number }> = LIMITES_METAS,
+): ChaveMeta[] {
   return CHAVES_METAS.filter((k) => {
     const v = m[k];
     if (v == null) return false;
-    return v < LIMITES_METAS[k].min || v > LIMITES_METAS[k].max;
+    return v < limites[k].min || v > limites[k].max;
   });
 }
 
 // Versão do texto de consentimento de dados de saúde. Mude ao alterar o texto.
-export const VERSAO_CONSENTIMENTO = "2026-11-v1-rascunho";
+export const VERSAO_CONSENTIMENTO = "2026-11-v2-rascunho";
 export const TEXTO_CONSENTIMENTO =
-  "Autorizo o Bocada a tratar meus dados de saúde (idade, peso, altura, sexo, objetivo e metas diárias) apenas para o funcionamento do app, conforme a Política de Privacidade. Posso retirar esta autorização a qualquer momento em Configurações.";
+  "Autorizo o Bocada a tratar meus dados de saúde (idade, peso, altura, sexo, objetivo, metas diárias e refeições registradas) apenas para o funcionamento do app, conforme a Política de Privacidade. Posso retirar esta autorização a qualquer momento em Configurações.";
+
+// ===== Limites personalizados (cada pessoa ajusta os de macros e água) =====
+export type Limites = Record<ChaveMeta, { min: number; max: number }>;
+export const CHAVES_LIMITES_AJUSTAVEIS = ["carboidratos_g", "proteinas_g", "gorduras_g", "agua_ml"] as const;
+
+export function limitesEfetivos(personalizados: unknown): Limites {
+  const base = Object.fromEntries(
+    CHAVES_METAS.map((k) => [k, { min: LIMITES_METAS[k].min, max: LIMITES_METAS[k].max }]),
+  ) as Limites;
+  if (personalizados && typeof personalizados === "object") {
+    for (const k of CHAVES_LIMITES_AJUSTAVEIS) {
+      const v = (personalizados as Record<string, { min?: unknown; max?: unknown }>)[k];
+      if (v && typeof v.min === "number" && typeof v.max === "number" && v.min < v.max)
+        base[k] = { min: v.min, max: v.max };
+    }
+  }
+  return base;
+}
 
 // E-mail de contato de privacidade (LGPD). PREENCHER.
 export const EMAIL_PRIVACIDADE = "[preencher@seudominio.com.br]";
