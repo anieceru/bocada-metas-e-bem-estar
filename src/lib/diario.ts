@@ -5,7 +5,16 @@ export type AlimentoTaco = {
   proteina_g: number | null;
   lipideos_g: number | null;
   carboidrato_g: number | null;
+  fonte?: "taco" | "usda";
+  marca?: string | null;
+  gtin_upc?: string | null;
 };
+
+export function referenciaAlimento(a: AlimentoTaco) {
+  return a.fonte === "usda"
+    ? { alimento_id: null, usda_fdc_id: a.id }
+    : { alimento_id: a.id, usda_fdc_id: null };
+}
 
 export function normalizar(s: string): string {
   return s
