@@ -296,6 +296,28 @@ export type Database = {
           proteina_g: number
         }[]
       }
+      buscar_usda: {
+        Args: { termo: string }
+        Returns: {
+          busca: string
+          carboidrato_g: number
+          categoria: string | null
+          descricao: string
+          edicao: string
+          fdc_id: number
+          gtin_upc: string | null
+          kcal: number
+          lipideos_g: number
+          marca: string | null
+          proteina_g: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "alimentos_usda"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       tem_consentimento_saude: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
