@@ -17,7 +17,7 @@ import {
 import { perfilQuery } from "@/lib/profile";
 import { excluirConta } from "@/lib/conta.functions";
 import { aplicarTema, lerTema, type Tema } from "@/lib/theme";
-import { OBJETIVOS, TEXTO_CONSENTIMENTO, VERSAO_CONSENTIMENTO, type Metas } from "@/lib/config";
+import { limitesEfetivos, OBJETIVOS, TEXTO_CONSENTIMENTO, VERSAO_CONSENTIMENTO, type Metas } from "@/lib/config";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({ meta: [{ title: "Configurações — Bocada" }, { name: "robots", content: "noindex" }] }),
@@ -179,7 +179,10 @@ function Config() {
 
       <Secao titulo="Metas diárias">
         {temConsent ? (
-          <MetasForm key={data.metas?.atualizado_em ?? "novo"} inicial={data.metas ?? {}} rotuloSalvar="Salvar metas" onSalvar={salvarMetas} />
+          <>
+            <MetasForm key={data.metas?.atualizado_em ?? "novo"} inicial={data.metas ?? {}} limites={limitesEfetivos(p.limites_alerta)} rotuloSalvar="Salvar metas" onSalvar={salvarMetas} />
+            <Link to="/limites" className="mt-4 block text-center text-sm text-primary underline">Ajustar limites de alerta</Link>
+          </>
         ) : (
           <p className="text-sm text-muted-foreground">Para guardar metas, autorize o tratamento de dados de saúde.</p>
         )}

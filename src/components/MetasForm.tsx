@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ConfirmarMetas } from "@/components/ConfirmarMetas";
-import { CHAVES_METAS, LIMITES_METAS, metasForaDoUsual, type Metas } from "@/lib/config";
+import { CHAVES_METAS, LIMITES_METAS, metasForaDoUsual, type Limites, type Metas } from "@/lib/config";
 
 function paraNumero(s: string): number | null {
   const t = s.trim();
@@ -17,7 +17,9 @@ export function MetasForm({
   rotuloSalvar,
   onSalvar,
   extra,
+  limites,
 }: {
+  limites?: Limites;
   inicial: Partial<Metas>;
   rotuloSalvar: string;
   onSalvar: (m: Metas) => Promise<void>;
@@ -30,7 +32,7 @@ export function MetasForm({
   const [salvando, setSalvando] = useState(false);
 
   const metas = Object.fromEntries(CHAVES_METAS.map((k) => [k, paraNumero(vals[k] ?? "")])) as Metas;
-  const fora = metasForaDoUsual(metas);
+  const fora = metasForaDoUsual(metas, limites);
 
   async function salvar(m: Metas) {
     setSalvando(true);
@@ -76,6 +78,7 @@ export function MetasForm({
         aberto={!!pendente}
         chaves={fora}
         metas={metas}
+        limites={limites}
         onCancelar={() => setPendente(null)}
         onConfirmar={() => pendente && salvar(pendente)}
       />
