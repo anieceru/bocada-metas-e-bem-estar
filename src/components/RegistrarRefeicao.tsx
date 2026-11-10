@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Mic, MicOff, Keyboard, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,9 @@ import {
 } from "@/lib/diario";
 import { verificarAlertaMetas } from "@/lib/notificacoes.functions";
 import { consultaAlimento, escolherAlimento, nomeAlimento, nutrientesDisponiveis, ordenarAlimentos, porcaoEstimada } from "@/lib/identificar-alimentos";
+import { AutorizacaoIA, useAutorizacaoIA } from "./AutorizacaoIA";
+import { interpretarDescricaoIA } from "@/lib/interpretacao-ia.functions";
+import type { ItemInterpretado } from "@/lib/interpretacao-ia";
 
 type SR = {
   lang: string; interimResults: boolean; continuous: boolean;
@@ -54,6 +58,8 @@ async function buscar(termo: string): Promise<AlimentoTaco[]> {
 
 export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café da manhã", "Almoço", "Jantar", "Lanches"], refeicaoInicial, onSaved }: { userId: string; dia?: string; refeicoes?: string[]; refeicaoInicial?: string; onSaved?: () => void }) {
   const qc = useQueryClient();
+  const { data: autorizaIA } = useAutorizacaoIA(userId);
+  const interpretarIA = useServerFn(interpretarDescricaoIA);
   const [suportaVoz, setSuportaVoz] = useState<boolean | null>(null);
   const [modo, setModo] = useState<"voz" | "texto">("voz");
   const [ouvindo, setOuvindo] = useState(false);
@@ -64,6 +70,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
   const [salvando, setSalvando] = useState(false);
   const [refeicao, setRefeicao] = useState(refeicaoInicial ?? refeicoes[0] ?? "Lanches");
   const [buscando, setBuscando] = useState(false);
+  const [entendendo, setEntendendo] = useState(false);
   const rec = useRef<SR | null>(null);
   const finalRef = useRef("");
   const buscaAtual = useRef(0);
@@ -86,12 +93,26 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
 
   async function interpretar(frase: string, via: "voz" | "digitado") {
     setOrigem(via);
-    const partes = interpretarFrase(frase, refeicao);
+    if (via === "voz") setTexto(frase);
+    const versao = ++buscaAtual.current;
+    let partes: ItemInterpretado[];
+    if (autorizaIA) {
+      setBuscando(true); setEntendendo(true); setItens([]);
+      try {
+        const resultado = await interpretarIA({ data: { frase, refeicao } });
+        if (versao !== buscaAtual.current) return;
+        if (resultado.erro) { toast.error(resultado.erro); return; }
+        partes = resultado.itens;
+      } catch {
+        toast.error("Não foi possível interpretar com IA. Sua descrição foi mantida."); return;
+      } finally {
+        if (versao === buscaAtual.current) { setEntendendo(false); setBuscando(false); }
+      }
+    } else partes = interpretarFrase(frase, refeicao);
     if (!partes.length) return void toast("Não entendi os alimentos. Tente de novo ou digite.");
     const primeira = partes[0];
     if (primeira) setRefeicao(primeira.refeicao);
     setBuscando(true);
-    const versao = ++buscaAtual.current;
     setItens(partes.map(p => ({ termo: p.termo, gramas: String(p.gramas ?? porcaoEstimada(p.termo)), refeicao: p.refeicao, opcoes: [], escolhido: null })));
     try {
     await Promise.all(
@@ -100,7 +121,8 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
         if (versao !== buscaAtual.current) return;
         const { marca } = consultaAlimento(p.termo);
          const { escolhido: a, generico } = escolherAlimento(p.termo, opcoes);
-         const aviso = generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : p.termo === "leite" ? "Leite integral padrão: valores estimados. Confira com o rótulo do seu leite." : undefined;
+         const baseAviso = generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : p.termo === "leite" ? "Leite integral padrão: valores estimados. Confira com o rótulo do seu leite." : undefined;
+         const aviso = [p.quantidadeOriginal ? `Quantidade descrita: ${p.quantidadeOriginal}. Confira a conversão em gramas.` : undefined, baseAviso].filter(Boolean).join(" ") || undefined;
          setItens(arr => arr.map((it, j) => j === i ? { ...it, opcoes, escolhido: a ? chave(a) : null, aviso } : it));
       }),
     );
@@ -188,11 +210,13 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
           {[...new Set([...refeicoes, refeicao, ...itens.map(it => it.refeicao)])].map((nome) => <option key={nome}>{nome}</option>)}
         </select>
       </label>
+      <AutorizacaoIA userId={userId} disabled={buscando || ouvindo} />
       {modo === "voz" && suportaVoz ? (
         <div className="text-center">
           <Button
             type="button"
             onClick={ouvir}
+            disabled={buscando}
             aria-pressed={ouvindo}
             aria-label={ouvindo ? "Parar de ouvir" : "Falar o que comeu"}
             className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${ouvindo ? "animate-pulse bg-destaque text-destaque-foreground" : "bg-primary text-primary-foreground"}`}
@@ -214,7 +238,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
           <label htmlFor={refeicaoInicial ? "refeicao-texto" : "o-que-comi"} className="text-sm font-medium">O que você comeu?</label>
           <Textarea id={refeicaoInicial ? "refeicao-texto" : "o-que-comi"} rows={2} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Digite um alimento ou o que comeu…" />
           <div className="flex gap-2">
-            <Button type="submit" disabled={buscando || ouvindo || !texto.trim()} className="flex-1 rounded-xl"><Search className="h-4 w-4" />{buscando ? "Buscando…" : "Buscar alimentos"}</Button>
+            <Button type="submit" disabled={buscando || ouvindo || !texto.trim()} className="flex-1 rounded-xl"><Search className="h-4 w-4" />{entendendo ? "Entendendo…" : buscando ? "Buscando…" : "Buscar alimentos"}</Button>
             {suportaVoz && modo === "texto" && (
               <Button type="button" variant="outline" className="rounded-xl" onClick={() => setModo("voz")} aria-label="Usar voz">
                 <Mic className="h-4 w-4" aria-hidden />

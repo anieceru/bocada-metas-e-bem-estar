@@ -39,6 +39,7 @@ use the editor.
 - Keep macro energy conversions and save validation in src/lib/macros.ts; persist whole grams rounded down when converting percentages so rounding cannot exceed the calorie budget.
 - Store meal labels on each diary entry and user-editable meal lists on profiles; removing a category must not remove existing food records.
 - Parse spoken meal context before catalog searches and carry the resolved meal per item through saving; filler words must never become catalog queries.
+- AI interpretation uses an authenticated server function with server-checked, versioned individual consent and a health-consent check; only the description reaches the zero-retention Gateway model, never account/profile/history data. Validate structured outputs and resolve nutrients exclusively from the local catalog; preserve input on failure and never log health content.
 - Monthly evolution uses recorded nutrition totals only; missing days and unavailable micronutrients must not be reported as zero intake or inferred body-weight change.
 - Push delivery uses the Firebase Messaging connector and a dedicated messaging worker; send generic reminders only, never nutrient totals, body metrics, or custom meal labels to delivery services.
 - Notification scheduling runs hourly in the user's stored timezone; daily-only mode suppresses meal, water, and goal-alert pushes, and a sent-key prevents repeated alerts within one day.
