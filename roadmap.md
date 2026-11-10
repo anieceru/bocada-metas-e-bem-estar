@@ -1,11 +1,11 @@
 # Bocada roadmap
 
-- [ ] Reordenar macros: proteínas, carbos e gorduras
-- [ ] Explicar água e calorias com destaque, déficit/superávit e fontes
-- [ ] Gráfico da evolução nutricional
-- [ ] Preferências de lembretes e alertas com orientação acolhedora
+- [x] Reordenar macros: proteínas, carbos e gorduras
+- [x] Explicar água e calorias com destaque, déficit/superávit e fontes
+- [x] Gráfico da evolução nutricional
+- [x] Preferências de lembretes e alertas com orientação acolhedora
 - [ ] Envio de lembretes por e-mail (requer domínio próprio configurado)
-- [ ] Notificações com app fechado (requer serviço de notificações conectado)
+- [x] Notificações com app fechado: Firebase conectado e envio horário configurado; entrega depende de publicar e autorizar o aparelho, ainda não verificada
 
 - [x] Corrigir salvamento de perfil e esclarecer sexo opcional
 - [x] Metas com macros em porcentagem ou gramas e bloqueio acima de 100%

@@ -50,7 +50,7 @@ function Formulario({ userId, refeicoes, inicial, dispositivos, onSalvo }: { use
     setSalvando(true);
     try {
       let canalPush = dispositivos > 0;
-      if (modo !== "nenhuma" && !canalPush) {
+      if (modo !== "nenhuma") {
         const r = await ativarPush();
         if (r.status !== "registrado") return void toast(MSG_PUSH[r.status]);
         const { error } = await supabase.from("dispositivos_push").upsert({ user_id: userId, token: r.token }, { onConflict: "token", ignoreDuplicates: true });
