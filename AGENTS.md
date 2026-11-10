@@ -34,7 +34,7 @@ use the editor.
 - Goal "out of usual range" thresholds and the consent text version live in `src/lib/config.ts`, the single place to adjust them.
 - Account deletion runs in a server function using the admin client after `requireSupabaseAuth`; user id comes only from the verified session.
 - Keep USDA branded foods in a separate local catalog and reference its FDC ids separately from TACO ids in diary entries, so existing entries and source attribution remain intact. Never turn missing USDA nutrients into zero.
-- Resolve diary phrases and rank catalog candidates through browser-safe local helpers; query common foods first, cache searches per composer, and require explicit confirmation for missing brands to avoid misattribution and unnecessary catalog waits.
+- Resolve diary phrases, display names, and catalog selection through browser-safe local helpers; query common foods first and cache searches per composer. Missing-brand substitutions require confirmation except user-approved generic foods, which must be labeled as estimates without attributing their values to the absent brand.
 - Use the shared private-page metadata helper for authenticated content pages to keep page-specific social descriptions static and free of user health data.
 - Keep macro energy conversions and save validation in src/lib/macros.ts; persist whole grams rounded down when converting percentages so rounding cannot exceed the calorie budget.
 - Store meal labels on each diary entry and user-editable meal lists on profiles; removing a category must not remove existing food records.

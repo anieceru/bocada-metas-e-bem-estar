@@ -29,6 +29,19 @@ export function nutrientesDisponiveis(a: AlimentoTaco) {
   return [a.kcal, a.proteina_g, a.lipideos_g, a.carboidrato_g].every(v => v != null);
 }
 
+export function escolherAlimento(termo: string, opcoes: AlimentoTaco[]) {
+  const { alimento, marca } = consultaAlimento(termo);
+  const exata = opcoes.find(a => nutrientesDisponiveis(a) && (!marca || normalizar(a.marca ?? "").includes(marca)));
+  const generico = marca && alimento === "queijo minas"
+    ? ordenarAlimentos(alimento, opcoes).find(a => a.fonte !== "usda" && normalizar(a.descricao).replace(/[.,]/g, "").includes("queijo minas frescal") && nutrientesDisponiveis(a))
+    : undefined;
+  return { escolhido: exata ?? generico, generico: !exata && !!generico };
+}
+
+export function nomeAlimento(descricao: string) {
+  return descricao.replace(/^(?:organic )?whole milk(?=\s*(?:·|$))/i, "Leite integral");
+}
+
 export function porcaoEstimada(termo: string) {
   return consultaAlimento(termo).alimento === "acucar" ? 5 : 100;
 }
