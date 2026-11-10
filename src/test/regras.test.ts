@@ -28,7 +28,7 @@ describe("calculadora de metas", () => {
   const base = { idade: 30, peso_kg: 70, altura_cm: 170, sexo: "feminino", atividade: "sedentario", objetivo: "manter" };
   it("usa Mifflin-St Jeor com fator sedentário 1,2", () => {
     const r = calcularMetas(base)!;
-    expect(r.basal).toBe(1451); // 700 + 1062.5 - 150 - 161
+    expect(r.basal).toBe(1452); // 700 + 1062,5 - 150 - 161 = 1451,5
     expect(r.metas.kcal).toBe(1742);
   });
   it("emagrecer tira 500 kcal da manutenção", () => {
