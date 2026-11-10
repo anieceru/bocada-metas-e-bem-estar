@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { entradaInterpretacao, VERSAO_CONSENTIMENTO_IA } from "./interpretacao-ia";
+import { entradaInterpretacao, podeInterpretarIA } from "./interpretacao-ia";
 
 export const interpretarDescricaoIA = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -10,7 +10,7 @@ export const interpretarDescricaoIA = createServerFn({ method: "POST" })
       context.supabase.from("consentimentos_ia").select("versao").eq("user_id", context.userId).maybeSingle(),
       context.supabase.from("profiles").select("consentimento_saude_em").eq("id", context.userId).maybeSingle(),
     ]);
-    if (error || !perfil?.consentimento_saude_em || consentimento?.versao !== VERSAO_CONSENTIMENTO_IA) return { itens: [], erro: "Autorize separadamente a interpretação por IA antes de enviar a descrição." };
+    if (error || !podeInterpretarIA(perfil?.consentimento_saude_em, consentimento?.versao)) return { itens: [], erro: "Autorize separadamente a interpretação por IA antes de enviar a descrição." };
     const { interpretarComModelo } = await import("./interpretacao-ia.server");
     return interpretarComModelo(data.frase, data.refeicao);
   });

@@ -27,7 +27,7 @@ export function AutorizacaoIA({ userId, disabled }: { userId: string; disabled?:
   }
   return <div className="my-4 border-y py-3">
     <label className="flex items-start gap-2 text-sm"><Checkbox aria-label="Autorizar interpretação por IA" checked={autorizado === true} disabled={disabled || isPending || isError || salvando} onCheckedChange={v => alterar(v === true)} />Interpretação por IA (opcional)</label>
-    <details className="mt-2 text-xs text-muted-foreground"><summary className="cursor-pointer">Autorização e privacidade</summary><p className="mt-2">{TEXTO_CONSENTIMENTO_IA}</p></details>
+    <p className="mt-2 text-xs text-muted-foreground">{TEXTO_CONSENTIMENTO_IA}</p>
     {isError && <p role="alert" className="mt-2 text-xs text-destructive">Não foi possível conferir a autorização. A interpretação local continua disponível.</p>}
   </div>;
 }
