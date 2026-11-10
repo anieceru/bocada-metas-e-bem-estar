@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  calcularNutrientes, dividirItens, hojeISO, interpretarItem, normalizar, referenciaAlimento, type AlimentoTaco,
+   calcularNutrientes, hojeISO, interpretarFrase, normalizar, referenciaAlimento, type AlimentoTaco,
 } from "@/lib/diario";
 import { verificarAlertaMetas } from "@/lib/notificacoes.functions";
 import { consultaAlimento, escolherAlimento, nomeAlimento, nutrientesDisponiveis, ordenarAlimentos, porcaoEstimada } from "@/lib/identificar-alimentos";
@@ -24,7 +24,7 @@ function criarReconhecimento(): SR | null {
   return C ? new C() : null;
 }
 
-type Item = { termo: string; gramas: string; opcoes: AlimentoTaco[]; escolhido: string | null; aviso?: string | undefined };
+type Item = { termo: string; gramas: string; refeicao: string; opcoes: AlimentoTaco[]; escolhido: string | null; aviso?: string | undefined };
 const chave = (a: AlimentoTaco) => `${a.fonte ?? "taco"}:${a.id}`;
 
 async function buscar(termo: string): Promise<AlimentoTaco[]> {
@@ -86,11 +86,13 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
 
   async function interpretar(frase: string, via: "voz" | "digitado") {
     setOrigem(via);
-    const partes = dividirItens(frase).map(interpretarItem).filter((p) => p.termo);
+    const partes = interpretarFrase(frase, refeicao);
     if (!partes.length) return void toast("Não entendi os alimentos. Tente de novo ou digite.");
+    const primeira = partes[0];
+    if (primeira) setRefeicao(primeira.refeicao);
     setBuscando(true);
     const versao = ++buscaAtual.current;
-    setItens(partes.map(p => ({ termo: p.termo, gramas: String(p.gramas ?? porcaoEstimada(p.termo)), opcoes: [], escolhido: null })));
+    setItens(partes.map(p => ({ termo: p.termo, gramas: String(p.gramas ?? porcaoEstimada(p.termo)), refeicao: p.refeicao, opcoes: [], escolhido: null })));
     try {
     await Promise.all(
       partes.map(async (p, i) => {
@@ -163,7 +165,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
       if (!a || !(g > 0 && g <= 5000)) return [];
       const nome = nomeAlimento(a.descricao);
       const descricao = a.fonte === "usda" && a.marca ? `${nome} · ${a.marca}` : nome;
-      return [{ user_id: userId, dia, refeicao, ...referenciaAlimento(a), descricao: descricao.slice(0, 200), gramas: g, origem, ...calcularNutrientes(a, g) }];
+      return [{ user_id: userId, dia, refeicao: it.refeicao, ...referenciaAlimento(a), descricao: descricao.slice(0, 200), gramas: g, origem, ...calcularNutrientes(a, g) }];
     });
     if (!linhas.length) return void toast("Escolha pelo menos um alimento com quantidade válida.");
     setSalvando(true);
@@ -182,8 +184,8 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
   return (
     <section className="py-4">
       <label className="mb-4 block text-sm font-medium">Refeição
-        <select aria-label="Refeição do registro" value={refeicao} onChange={(e) => setRefeicao(e.target.value)} className="mt-1 h-10 w-full rounded-md border bg-background px-3">
-          {refeicoes.map((nome) => <option key={nome}>{nome}</option>)}
+        <select aria-label="Refeição do registro" value={refeicao} onChange={(e) => { const nome = e.target.value; setRefeicao(nome); setItens(arr => arr.map(it => ({ ...it, refeicao: nome }))); }} className="mt-1 h-10 w-full rounded-md border bg-background px-3">
+          {[...new Set([...refeicoes, refeicao, ...itens.map(it => it.refeicao)])].map((nome) => <option key={nome}>{nome}</option>)}
         </select>
       </label>
       {modo === "voz" && suportaVoz ? (
@@ -230,6 +232,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
             const n = a && nutrientesDisponiveis(a) && g > 0 ? calcularNutrientes(a, g) : null;
             return (
               <div key={i} className="rounded-xl border p-3">
+                <p className="mb-2 text-xs font-medium text-muted-foreground">{it.refeicao}</p>
                 <div className="flex items-center gap-2">
                   <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                   <Input key={it.termo} aria-label="Buscar alimento" defaultValue={it.termo} onBlur={(e) => e.target.value !== it.termo && trocarBusca(i, e.target.value)} className="h-9" />

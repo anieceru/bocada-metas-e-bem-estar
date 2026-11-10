@@ -1,8 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { calcularNutrientes, dividirItens, interpretarItem, referenciaAlimento } from "@/lib/diario";
+import { calcularNutrientes, dividirItens, interpretarFrase, interpretarItem, referenciaAlimento } from "@/lib/diario";
 import { limitesEfetivos, metasForaDoUsual } from "@/lib/config";
 
 describe("diário", () => {
+  it.each([["no almoço", "Almoço"], ["no café da manhã", "Café da manhã"], ["no lanche", "Lanches"], ["no jantar", "Jantar"]])("atribui alimentos à refeição %s", (fala, destino) => {
+    expect(interpretarFrase(`${fala} comi 150 g de arroz, né`, "Lanches")).toEqual([{ termo: "arroz", gramas: 150, refeicao: destino }]);
+  });
+  it("mantém refeições distintas na mesma frase", () => {
+    expect(interpretarFrase("no café da manhã tomei leite e no almoço comi arroz", "Jantar")).toEqual([{ termo: "leite", gramas: null, refeicao: "Café da manhã" }, { termo: "arroz", gramas: null, refeicao: "Almoço" }]);
+  });
+  it("reconhece a refeição no fim da frase", () => {
+    expect(interpretarFrase("comi arroz no almoço", "Jantar")[0]?.refeicao).toBe("Almoço");
+  });
+  it.each(["no almoço", "no café da manhã", "no lanche", "no jantar"])("não procura %s como alimento", (refeicao) => {
+    expect(dividirItens(`${refeicao} comi 150 g de arroz`).map(interpretarItem).filter(p => p.termo)).toEqual([{ termo: "arroz", gramas: 150 }]);
+  });
+  it("ignora né e ne como marcas da fala, sem sugerir nêspera", () => {
+    expect(dividirItens("arroz, né, feijão, ne").map(interpretarItem).filter(p => p.termo).map(p => p.termo)).toEqual(["arroz", "feijao"]);
+    expect(interpretarItem("nêspera").termo).toBe("nespera");
+  });
   it("mantém a referência USDA separada da TACO ao registrar", () => {
     const a = { id: 123456, descricao: "Produto USDA", kcal: 400, proteina_g: 10, lipideos_g: 20, carboidrato_g: 45, fonte: "usda" as const };
     expect(referenciaAlimento(a)).toEqual({ alimento_id: null, usda_fdc_id: 123456 });
