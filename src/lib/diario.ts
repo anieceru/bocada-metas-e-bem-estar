@@ -28,7 +28,7 @@ export function normalizar(s: string): string {
 
 const PALAVRAS_VAZIAS = new Set([
   "comi", "tomei", "bebi", "almocei", "jantei", "lanchei", "eu", "hoje", "um", "uma", "uns", "umas",
-  "de", "do", "da", "dos", "das", "com", "no", "na", "o", "a", "os", "as", "pouco", "porcao", "prato", "ne",
+  "de", "do", "da", "dos", "das", "com", "no", "na", "o", "a", "os", "as", "pouco", "porcao", "prato", "ne", "e", "mais",
 ]);
 
 const NUMEROS: Record<string, number> = { cem: 100, duzentos: 200, duzentas: 200, trezentos: 300, trezentas: 300, quinhentos: 500, quinhentas: 500, cinquenta: 50, mil: 1000 };
