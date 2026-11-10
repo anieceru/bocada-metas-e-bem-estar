@@ -38,7 +38,20 @@ const REFEICOES_FALA: Record<string, string> = {
   "lanche da tarde": "Lanches", "lanches da tarde": "Lanches", "lanche da manha": "Lanches", "lanches da manha": "Lanches",
   jantar: "Jantar",
 };
-const MARCADOR_REFEICAO = /\b(?:no|na|para o|para a)\s+(cafe da manha|almoco|lanches?(?:\s+da\s+(?:tarde|manha))?|jantar)\b/g;
+// A refeição pode vir com preposição ("no almoço"), no início da fala ("café da manhã: leite e pão") ou após pontuação.
+const MARCADOR_REFEICAO = /(?:^|[.,;]\s*|\b(?:no|na|para o|para a)\s+)(cafe da manha|almoco|lanches?(?:\s+da\s+(?:tarde|manha))?|jantar)\b/g;
+
+/** Medidas caseiras → gramas/ml. "copo" usa o tamanho do copo da pessoa (padrão 200 ml). */
+export type Medidas = { copoMl?: number };
+const NUM_MEDIDA: Record<string, number> = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, meio: 0.5, meia: 0.5 };
+const MEDIDA_G = (medida: string, medidas?: Medidas): number | null => {
+  if (/^copos?$/.test(medida)) return medidas?.copoMl ?? 200;
+  if (/^xicaras?$/.test(medida)) return 200;
+  if (/^colheres? de sopa$/.test(medida)) return 15;
+  if (/^colheres? de cha$/.test(medida)) return 5;
+  if (/^colheres? de sobremesa$/.test(medida)) return 10;
+  return null;
+};
 
 /** Refeições são contexto da fala, nunca termos de busca no catálogo. */
 export function interpretarFrase(texto: string, refeicaoInicial: string) {
