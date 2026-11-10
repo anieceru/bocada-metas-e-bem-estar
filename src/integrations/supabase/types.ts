@@ -92,6 +92,35 @@ export type Database = {
         }
         Relationships: []
       }
+      dispositivos_push: {
+        Row: {
+          criado_em: string
+          id: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispositivos_push_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metas: {
         Row: {
           agua_ml: number | null
@@ -128,6 +157,82 @@ export type Database = {
             foreignKeyName: "metas_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notificacao_preferencias: {
+        Row: {
+          agua: boolean
+          alertas: boolean
+          atualizado_em: string
+          canal_email: boolean
+          canal_push: boolean
+          fuso: string
+          hora_diaria: number
+          horas_refeicoes: Json
+          modo: string
+          refeicoes: boolean
+          user_id: string
+        }
+        Insert: {
+          agua?: boolean
+          alertas?: boolean
+          atualizado_em?: string
+          canal_email?: boolean
+          canal_push?: boolean
+          fuso?: string
+          hora_diaria?: number
+          horas_refeicoes?: Json
+          modo?: string
+          refeicoes?: boolean
+          user_id: string
+        }
+        Update: {
+          agua?: boolean
+          alertas?: boolean
+          atualizado_em?: string
+          canal_email?: boolean
+          canal_push?: boolean
+          fuso?: string
+          hora_diaria?: number
+          horas_refeicoes?: Json
+          modo?: string
+          refeicoes?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacao_preferencias_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notificacoes_enviadas: {
+        Row: {
+          chave: string
+          enviada_em: string
+          user_id: string
+        }
+        Insert: {
+          chave: string
+          enviada_em?: string
+          user_id: string
+        }
+        Update: {
+          chave?: string
+          enviada_em?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_enviadas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },

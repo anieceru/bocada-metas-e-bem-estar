@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   calcularNutrientes, dividirItens, hojeISO, interpretarItem, normalizar, referenciaAlimento, type AlimentoTaco,
 } from "@/lib/diario";
+import { verificarAlertaMetas } from "@/lib/notificacoes.functions";
 
 type SR = {
   lang: string; interimResults: boolean; continuous: boolean;
@@ -138,6 +139,9 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
     toast.success(linhas.length === 1 ? "Registrado." : `${linhas.length} itens registrados.`);
     setItens([]); setTexto(""); setParcial("");
     qc.invalidateQueries({ queryKey: ["registros"] });
+    verificarAlertaMetas({ data: { dia } }).then((r) => {
+      if (r.passou) toast("Uma meta de hoje foi ultrapassada. Não é preciso compensar; siga com suas refeições habituais.");
+    }).catch(() => { /* O registro foi salvo mesmo se o aviso não puder ser verificado. */ });
     onSaved?.();
   }
 
@@ -220,7 +224,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
                 {n && (
                   <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="rounded bg-estado-estimativa/15 px-1.5 py-0.5 font-medium text-estado-estimativa">Estimativa</span>
-                    {n.kcal} kcal · C {n.carboidratos_g} g · P {n.proteinas_g} g · G {n.gorduras_g} g
+                    {n.kcal} kcal · P {n.proteinas_g} g · C {n.carboidratos_g} g · G {n.gorduras_g} g
                   </p>
                 )}
               </div>

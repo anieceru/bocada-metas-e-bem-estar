@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ConfirmarMetas } from "@/components/ConfirmarMetas";
-import { Info, Calculator } from "lucide-react";
+import { Info, Calculator, ExternalLink } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { calcularMetas, faltandoParaCalcular, ritmoSemanalG, AGUA_ML_POR_KG, FRACAO_GORDURA, KCAL_POR_KG_CORPORAL, type DadosCalculo } from "@/lib/calculo-metas";
 import { CHAVES_METAS, metasForaDoUsual, type Limites, type Metas } from "@/lib/config";
@@ -104,16 +104,20 @@ export function MetasForm({
                 <p className="text-sm font-semibold">Como calculamos</p>
                 {calc ? (
                   <>
-                    <p><strong>1. Gasto em repouso</strong> (fórmula de Mifflin-St Jeor): 10 × peso + 6,25 × altura − 5 × idade {calculo.sexo === "masculino" ? "+ 5" : calculo.sexo === "feminino" ? "− 161" : "− 78 (média, sem sexo informado)"} = <strong>{calc.basal} kcal</strong>.</p>
-                    <p><strong>2. Atividade</strong> ({calc.ativ.l}): × {String(calc.ativ.fator).replace(".", ",")} = <strong>{calc.manutencao} kcal</strong> para manter o peso.</p>
-                    <p><strong>3. Objetivo</strong> ({calc.obj.l}): {calc.obj.ajuste === 0 ? "sem ajuste" : `${calc.obj.ajuste > 0 ? "+" : "−"} ${Math.abs(calc.obj.ajuste)} kcal`} = <strong>{calc.metas.kcal} kcal</strong>.</p>
-                    <p><strong>4. Proteínas:</strong> {String(calc.obj.proteinaPorKg).replace(".", ",")} g por kg. <strong>Gorduras:</strong> {FRACAO_GORDURA * 100}% das calorias (9 kcal/g). <strong>Carboidratos:</strong> o restante (4 kcal/g).</p>
-                    <p><strong>5. Água:</strong> {AGUA_ML_POR_KG} ml por kg.</p>
+                    <p><strong>Em repouso:</strong> estimamos <strong className="text-estado-confirmada">{calc.basal.toLocaleString("pt-BR")} kcal/dia</strong> usando idade, peso, altura e o coeficiente de sexo da equação de Mifflin-St Jeor.</p>
+                    <p><strong>Com sua atividade:</strong> o gasto estimado para manter o peso é <strong className="text-estado-confirmada">{calc.manutencao.toLocaleString("pt-BR")} kcal/dia</strong>.</p>
+                    <p><strong>Seu ponto de partida:</strong> <strong className="text-estado-confirmada">{calc.metas.kcal?.toLocaleString("pt-BR")} kcal/dia</strong> para {calc.obj.nome}.</p>
+                    <p>{calc.obj.ajuste < 0 ? <>Isso é um <strong>déficit</strong>: <strong className="text-estado-confirmada">{Math.abs(calc.obj.ajuste)} kcal a menos por dia</strong> que o gasto estimado — o corpo pode usar suas reservas para completar a energia.</> : calc.obj.ajuste > 0 ? <>Isso é um <strong>superávit</strong>: <strong className="text-estado-confirmada">{calc.obj.ajuste} kcal a mais por dia</strong> que o gasto estimado. Essa energia pode apoiar o ganho de peso; ganhar músculo também depende do treino e não é garantido pelo cálculo.</> : <>Sem déficit ou superávit: buscamos aproximar a energia consumida do gasto estimado.</>}</p>
+                    <p><strong>Proteínas:</strong> {String(calc.obj.proteinaPorKg).replace(".", ",")} g por kg. <strong>Carbos:</strong> o restante (4 kcal/g). <strong>Gorduras:</strong> {FRACAO_GORDURA * 100}% das calorias (9 kcal/g).</p>
+                    {calculo.sexo !== "masculino" && calculo.sexo !== "feminino" && <p className="text-muted-foreground">Sem esse dado, usamos um coeficiente médio. É uma adaptação do app, não uma equação validada separadamente.</p>}
                   </>
                 ) : (
                   <p>Usamos idade, peso, altura, sexo, nível de atividade e objetivo. Falta: {faltando.join(", ")}.</p>
                 )}
-                <p className="text-muted-foreground">Ritmo semanal: diferença para o gasto de manutenção × 7 ÷ {KCAL_POR_KG_CORPORAL.toLocaleString("pt-BR")} kcal (≈ 1 kg de gordura corporal). São estimativas; o corpo de cada pessoa responde de um jeito, e não substituem orientação profissional.</p>
+                <p className="text-muted-foreground">O ajuste para o objetivo é uma escolha inicial do Bocada, não parte da fórmula original. O ritmo semanal usa uma aproximação de {KCAL_POR_KG_CORPORAL.toLocaleString("pt-BR")} kcal/kg: o metabolismo muda e o resultado real pode ser bem diferente.</p>
+                <details><summary className="cursor-pointer font-medium text-primary">Ver a fórmula completa</summary><p className="mt-1">10 × peso (kg) + 6,25 × altura (cm) − 5 × idade + coeficiente de sexo (+5 masculino, −161 feminino, −78 médio). Multiplicamos pelo fator de atividade e somamos o ajuste do objetivo.</p></details>
+                <a href="https://pubmed.ncbi.nlm.nih.gov/2305711/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary underline">Entenda mais · estudo original <ExternalLink className="h-3 w-3" /></a>
+                <a href="https://www.niddk.nih.gov/health-information/professionals/diabetes-discoveries-practice/nih-body-weight-planner" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary underline">Déficit e mudanças de peso · NIH <ExternalLink className="h-3 w-3" /></a>
               </PopoverContent>
             </Popover>
           </div>
@@ -149,7 +153,17 @@ export function MetasForm({
         </div>
       </section>
       <div className="space-y-1.5">
-        <Label htmlFor="meta-agua_ml">Água diária (ml)</Label>
+        <div className="flex items-center gap-2"><Label htmlFor="meta-agua_ml">Água diária (ml)</Label>
+          <Popover><PopoverTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-7 w-7" aria-label="Como calculamos a água"><Info className="h-4 w-4" /></Button></PopoverTrigger>
+            <PopoverContent className="w-80 space-y-2 text-xs leading-relaxed">
+              <p className="text-sm font-semibold">Um ponto de partida para água</p>
+              <p>O Bocada usa <strong>{AGUA_ML_POR_KG} ml por kg</strong> e arredonda para os 50 ml mais próximos.{calculo?.peso_kg ? <> Com {calculo.peso_kg.toLocaleString("pt-BR")} kg: <strong className="text-estado-confirmada">{Math.round(calculo.peso_kg * AGUA_ML_POR_KG / 50) * 50} ml/dia</strong>.</> : " Preencha seu peso para calcular."}</p>
+              <p>É uma regra prática ajustável do app, não uma recomendação universal. Calor, exercício e alimentação mudam a necessidade; a água dos alimentos também conta para a hidratação.</p>
+              <p className="text-muted-foreground">Se há restrição de líquidos, doença renal ou cardíaca, siga a orientação do profissional que acompanha você. Não force grandes volumes de uma vez.</p>
+              <a href="https://www.efsa.europa.eu/en/press/news/nda100326" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary underline">Entenda mais · referências de hidratação da EFSA <ExternalLink className="h-3 w-3" /></a>
+            </PopoverContent>
+          </Popover>
+        </div>
         <Input id="meta-agua_ml" inputMode="numeric" placeholder="—" value={vals["agua_ml"]} onChange={(e) => setVals({ ...vals, agua_ml: e.target.value.replace(/\D/g, "") })} />
       </div>
       {calc && ritmo != null && (

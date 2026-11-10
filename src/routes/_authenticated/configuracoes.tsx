@@ -20,6 +20,8 @@ import { aplicarTema, lerTema, type Tema } from "@/lib/theme";
 import { ATIVIDADES } from "@/lib/calculo-metas";
 import { limitesEfetivos, OBJETIVOS, TEXTO_CONSENTIMENTO, VERSAO_CONSENTIMENTO, type Metas } from "@/lib/config";
 import { privatePageHead } from "@/lib/page-head";
+import { Lembretes } from "@/components/Lembretes";
+import { REFEICOES_PADRAO } from "@/lib/calendario";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => privatePageHead("Configurações", "Gerencie perfil, metas, privacidade e conta no Bocada."),
@@ -201,6 +203,10 @@ function Config() {
         ) : (
           <p className="text-sm text-muted-foreground">Para guardar metas, autorize o tratamento de dados de saúde.</p>
         )}
+      </Secao>
+
+      <Secao titulo="Lembretes e notificações">
+        <Lembretes userId={uid} refeicoes={p.refeicoes?.length ? p.refeicoes : REFEICOES_PADRAO} />
       </Secao>
 
       <Secao titulo="Tema">

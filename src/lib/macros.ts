@@ -1,9 +1,9 @@
 import type { Metas } from "./config";
 
 export const MACROS = [
-  { chave: "carboidratos_g", nome: "Carboidratos", kcalPorG: 4 },
-  { chave: "gorduras_g", nome: "Gorduras", kcalPorG: 9 },
   { chave: "proteinas_g", nome: "Proteínas", kcalPorG: 4 },
+  { chave: "carboidratos_g", nome: "Carbos", kcalPorG: 4 },
+  { chave: "gorduras_g", nome: "Gorduras", kcalPorG: 9 },
 ] as const;
 export type ChaveMacro = (typeof MACROS)[number]["chave"];
 export type ModoMacros = "porcentagem" | "gramas";

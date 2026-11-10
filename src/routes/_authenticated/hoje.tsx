@@ -24,8 +24,8 @@ export const Route = createFileRoute("/_authenticated/hoje")({
 });
 const METRICAS = [
   { key: "kcal", nome: "Calorias", unidade: "kcal" },
-  { key: "carboidratos_g", nome: "Carbos", unidade: "g" },
   { key: "proteinas_g", nome: "Proteínas", unidade: "g" },
+  { key: "carboidratos_g", nome: "Carbos", unidade: "g" },
   { key: "gorduras_g", nome: "Gorduras", unidade: "g" },
 ] as const;
 function Hoje() {
