@@ -66,7 +66,7 @@ function Onboarding() {
           consentimento_saude_versao: VERSAO_CONSENTIMENTO,
         }
       : {};
-    const { error } = await supabase.from("profiles").update({ ...base, ...saude }).eq("id", u.user.id);
+    const { error } = await supabase.from("profiles").update({ ...base, ...saude } as never).eq("id", u.user.id);
     if (error) return void toast.error("Não foi possível salvar. Tente de novo.");
     if (consente && metas) {
       const { error: e2 } = await supabase.from("metas").upsert({ user_id: u.user.id, ...metas }, { onConflict: "user_id" });

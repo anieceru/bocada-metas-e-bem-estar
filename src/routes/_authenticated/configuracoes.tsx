@@ -65,7 +65,7 @@ function Config() {
   const [altura, setAltura] = useState(p.altura_cm?.toString() ?? "");
   const [sexo, setSexo] = useState<string | null>(p.sexo);
   const [objetivo, setObjetivo] = useState<string | null>(p.objetivo);
-  const [atividade, setAtividade] = useState<string | null>(p.atividade);
+  const [atividade, setAtividade] = useState<string | null>(atividadeDe(p));
   const [tom, setTom] = useState(p.tom);
   const [copo, setCopo] = useState(p.copo_ml.toString());
   const [novoConsent, setNovoConsent] = useState(false);
@@ -83,7 +83,7 @@ function Config() {
       if (i == null || i < 18 || i > 120) return void toast.error("Informe uma idade válida (18 ou mais).");
       Object.assign(upd, { idade: i, peso_kg: num(peso), altura_cm: num(altura), sexo, objetivo, atividade });
     }
-    const { error } = await supabase.from("profiles").update(upd).eq("id", uid);
+    const { error } = await supabase.from("profiles").update(upd as never).eq("id", uid);
     if (error) return void toast.error("Não foi possível salvar. Confira os valores.");
     toast.success("Perfil salvo.");
     recarregar();
@@ -190,7 +190,7 @@ function Config() {
       <Secao titulo="Metas diárias">
         {temConsent ? (
           <>
-            <MetasForm key={data.metas?.atualizado_em ?? "novo"} inicial={data.metas ?? {}} limites={limitesEfetivos(p.limites_alerta)} calculo={{ idade: p.idade, peso_kg: p.peso_kg, altura_cm: p.altura_cm, sexo: p.sexo, atividade: p.atividade, objetivo: p.objetivo }} rotuloSalvar="Salvar metas" onSalvar={salvarMetas} />
+            <MetasForm key={data.metas?.atualizado_em ?? "novo"} inicial={data.metas ?? {}} limites={limitesEfetivos(p.limites_alerta)} calculo={{ idade: p.idade, peso_kg: p.peso_kg, altura_cm: p.altura_cm, sexo: p.sexo, atividade: atividadeDe(p), objetivo: p.objetivo }} rotuloSalvar="Salvar metas" onSalvar={salvarMetas} />
             <Link to="/limites" className="mt-4 block text-center text-sm text-primary underline">Ajustar limites de alerta</Link>
           </>
         ) : (
@@ -258,4 +258,9 @@ function Config() {
       </Secao>
     </AppShell>
   );
+}
+
+// Lê o nível de atividade mesmo antes de os tipos do banco serem atualizados.
+function atividadeDe(p: object): string | null {
+  return (p as { atividade?: string | null }).atividade ?? null;
 }
