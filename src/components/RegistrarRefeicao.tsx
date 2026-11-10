@@ -64,7 +64,7 @@ async function buscar(termo: string): Promise<AlimentoTaco[]> {
   return ordenarAlimentos(termo, [...locais, ...usda]);
 }
 
-export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café da manhã", "Almoço", "Jantar", "Lanches"], refeicaoInicial, onSaved }: { userId: string; dia?: string; refeicoes?: string[]; refeicaoInicial?: string; onSaved?: () => void }) {
+export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café da manhã", "Almoço", "Jantar", "Lanches"], refeicaoInicial, copoMl, onSaved }: { userId: string; dia?: string; refeicoes?: string[]; refeicaoInicial?: string; copoMl?: number; onSaved?: () => void }) {
   const qc = useQueryClient();
   const { data: autorizaIA } = useAutorizacaoIA(userId);
   const interpretarIA = useServerFn(interpretarDescricaoIA);
@@ -116,7 +116,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
       } finally {
         if (versao === buscaAtual.current) { setEntendendo(false); setBuscando(false); }
       }
-    } else partes = interpretarFrase(frase, refeicao);
+    } else partes = interpretarFrase(frase, refeicao, { copoMl });
     if (!partes.length) return void toast("Não entendi os alimentos. Tente de novo ou digite.");
     const primeira = partes[0];
     if (primeira) setRefeicao(primeira.refeicao);
@@ -130,7 +130,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
         const { marca } = consultaAlimento(p.termo);
          const { escolhido: a, generico } = escolherAlimento(p.termo, opcoes);
          const baseAviso = generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : p.termo === "leite" ? "Leite integral padrão: valores estimados. Confira com o rótulo do seu leite." : undefined;
-         const aviso = [p.quantidadeOriginal ? `Quantidade descrita: ${p.quantidadeOriginal}. Confira a conversão em gramas.` : undefined, baseAviso].filter(Boolean).join(" ") || undefined;
+         const aviso = [p.quantidadeOriginal ? `Quantidade descrita: ${p.quantidadeOriginal}. Confira a conversão em gramas.` : undefined, p.medidaOriginal ? `Medida caseira: ${p.medidaOriginal} ≈ ${p.gramas} g. Ajuste se necessário.` : undefined, baseAviso].filter(Boolean).join(" ") || undefined;
          setItens(arr => arr.map((it, j) => j === i ? { ...it, opcoes, escolhido: a ? chave(a) : null, aviso } : it));
       }),
     );
