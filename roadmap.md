@@ -1,5 +1,12 @@
 # Bocada roadmap
 
+- [ ] Reordenar macros: proteínas, carbos e gorduras
+- [ ] Explicar água e calorias com destaque, déficit/superávit e fontes
+- [ ] Gráfico da evolução nutricional
+- [ ] Preferências de lembretes e alertas com orientação acolhedora
+- [ ] Envio de lembretes por e-mail (requer domínio próprio configurado)
+- [ ] Notificações com app fechado (requer serviço de notificações conectado)
+
 - [x] Corrigir salvamento de perfil e esclarecer sexo opcional
 - [x] Metas com macros em porcentagem ou gramas e bloqueio acima de 100%
 
