@@ -13,6 +13,7 @@ import { Semana } from "@/components/Semana";
 import { perfilQuery } from "@/lib/profile";
 import { registrosDoDiaQuery } from "@/lib/registros";
 import { hojeISO } from "@/lib/diario";
+import { nomeAlimento } from "@/lib/identificar-alimentos";
 import { dataValida, REFEICOES_PADRAO } from "@/lib/calendario";
 import { privatePageHead } from "@/lib/page-head";
 
@@ -82,7 +83,7 @@ function Hoje() {
         const itens = registros.filter((r) => r.refeicao === nome);
         return <div key={nome} className="border-b py-4">
           <Button variant="ghost" onClick={() => setRefeicaoAberta(nome)} className="h-auto w-full justify-between px-0 text-left"><span className="font-semibold">{nome}</span><span className="flex items-center gap-2 text-xs text-muted-foreground">{Math.round(itens.reduce((s, r) => s + Number(r.kcal), 0))} kcal<Plus className="h-4 w-4 text-primary" /></span></Button>
-          {itens.length === 0 ? <p className="mt-2 text-xs text-muted-foreground">Nada registrado.</p> : <ul className="mt-2 divide-y">{itens.map((r) => <li key={r.id} className="flex items-center gap-2 py-2"><div className="min-w-0 flex-1"><p className="break-words text-sm">{r.descricao}</p><p className="text-xs text-muted-foreground">{Number(r.gramas)} g · {Math.round(Number(r.kcal))} kcal</p></div><Button variant="ghost" size="icon" aria-label={`Apagar ${r.descricao}`} onClick={() => apagar(r.id)}><Trash2 className="h-4 w-4" /></Button></li>)}</ul>}
+          {itens.length === 0 ? <p className="mt-2 text-xs text-muted-foreground">Nada registrado.</p> : <ul className="mt-2 divide-y">{itens.map((r) => <li key={r.id} className="flex items-center gap-2 py-2"><div className="min-w-0 flex-1"><p className="break-words text-sm">{nomeAlimento(r.descricao)}</p><p className="text-xs text-muted-foreground">{Number(r.gramas)} g · {Math.round(Number(r.kcal))} kcal</p></div><Button variant="ghost" size="icon" aria-label={`Apagar ${nomeAlimento(r.descricao)}`} onClick={() => apagar(r.id)}><Trash2 className="h-4 w-4" /></Button></li>)}</ul>}
         </div>;
       })}
     </section>

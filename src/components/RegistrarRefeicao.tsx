@@ -10,7 +10,7 @@ import {
   calcularNutrientes, dividirItens, hojeISO, interpretarItem, normalizar, referenciaAlimento, type AlimentoTaco,
 } from "@/lib/diario";
 import { verificarAlertaMetas } from "@/lib/notificacoes.functions";
-import { consultaAlimento, nutrientesDisponiveis, ordenarAlimentos, porcaoEstimada } from "@/lib/identificar-alimentos";
+import { consultaAlimento, escolherAlimento, nomeAlimento, nutrientesDisponiveis, ordenarAlimentos, porcaoEstimada } from "@/lib/identificar-alimentos";
 
 type SR = {
   lang: string; interimResults: boolean; continuous: boolean;
@@ -97,10 +97,9 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
         const opcoes = await buscarUmaVez(p.termo);
         if (versao !== buscaAtual.current) return;
         const { marca } = consultaAlimento(p.termo);
-        const exata = opcoes.find(a => marca && normalizar(a.marca ?? "").includes(marca));
-        const a = exata ?? opcoes.find(nutrientesDisponiveis);
-        const aviso = marca && !exata ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : p.termo === "leite" ? "Leite integral: referência de produto USDA, pois a TACO não informa estes valores. Confira com o rótulo do seu leite." : undefined;
-        setItens(arr => arr.map((it, j) => j === i ? { ...it, opcoes, escolhido: marca && !exata ? null : a ? chave(a) : null, aviso } : it));
+         const { escolhido: a, generico } = escolherAlimento(p.termo, opcoes);
+         const aviso = generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : p.termo === "leite" ? "Leite integral padrão: valores estimados. Confira com o rótulo do seu leite." : undefined;
+         setItens(arr => arr.map((it, j) => j === i ? { ...it, opcoes, escolhido: a ? chave(a) : null, aviso } : it));
       }),
     );
     } catch {
@@ -152,8 +151,8 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
     try { opcoes = await buscarUmaVez(termo); }
     catch { return void toast.error("Não foi possível buscar alimentos. Tente de novo."); }
     const { marca } = consultaAlimento(termo);
-    const a = opcoes.find(o => nutrientesDisponiveis(o) && (!marca || normalizar(o.marca ?? "").includes(marca)));
-    setItens((arr) => arr.map((it, j) => (j === i ? { ...it, termo, opcoes, escolhido: a ? chave(a) : null, aviso: marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : undefined } : it)));
+    const { escolhido: a, generico } = escolherAlimento(termo, opcoes);
+    setItens((arr) => arr.map((it, j) => (j === i ? { ...it, termo, opcoes, escolhido: a ? chave(a) : null, aviso: generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : undefined } : it)));
   }
 
   async function salvar() {
@@ -162,7 +161,8 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
       const a = it.opcoes.find((o) => chave(o) === it.escolhido);
       const g = Number(it.gramas.replace(",", "."));
       if (!a || !(g > 0 && g <= 5000)) return [];
-      const descricao = a.fonte === "usda" && a.marca ? `${a.descricao} · ${a.marca}` : a.descricao;
+      const nome = nomeAlimento(a.descricao);
+      const descricao = a.fonte === "usda" && a.marca ? `${nome} · ${a.marca}` : nome;
       return [{ user_id: userId, dia, refeicao, ...referenciaAlimento(a), descricao: descricao.slice(0, 200), gramas: g, origem, ...calcularNutrientes(a, g) }];
     });
     if (!linhas.length) return void toast("Escolha pelo menos um alimento com quantidade válida.");
@@ -248,7 +248,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
                       className="h-9 min-w-0 w-full rounded-md border border-input bg-background px-2 text-sm"
                     >
                       <option value="" disabled>Escolha um alimento</option>
-                      {it.opcoes.map((o) => <option key={chave(o)} value={chave(o)}>{o.descricao === "WHOLE MILK" ? "Leite integral (WHOLE MILK)" : o.descricao}{o.marca ? ` · ${o.marca}` : ""}</option>)}
+                       {it.opcoes.map((o) => <option key={chave(o)} value={chave(o)}>{nomeAlimento(o.descricao)}{o.marca ? ` · ${o.marca}` : ""}</option>)}
                     </select>
                     <div className="flex items-center gap-1">
                       <Input aria-label="Quantidade em gramas" inputMode="decimal" value={it.gramas} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, gramas: e.target.value } : x)))} className="h-9" />

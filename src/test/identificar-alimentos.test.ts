@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { consultaAlimento, ordenarAlimentos, nutrientesDisponiveis, porcaoEstimada } from "@/lib/identificar-alimentos";
+import { consultaAlimento, escolherAlimento, ordenarAlimentos, nutrientesDisponiveis, porcaoEstimada } from "@/lib/identificar-alimentos";
 const alimento = (id: number, descricao: string) => ({ id, descricao, kcal: 60, proteina_g: 3, lipideos_g: 3, carboidrato_g: 5 });
 describe("identificação local", () => {
+  it("usa queijo Minas frescal genérico se Ipanema estiver ausente", () => {
+    const resultado = escolherAlimento("queijo minas marca ipanema", [alimento(462, "Queijo, minas, meia cura"), alimento(461, "Queijo, minas, frescal")]);
+    expect(resultado.escolhido?.id).toBe(461);
+    expect(resultado.generico).toBe(true);
+    expect(resultado.escolhido?.marca).toBeUndefined();
+  });
+  it("prefere os valores da marca quando estiver disponível", () => {
+    const resultado = escolherAlimento("queijo minas marca ipanema", [alimento(461, "Queijo, minas, frescal"), { ...alimento(9, "Queijo minas"), marca: "Ipanema", fonte: "usda" }]);
+    expect(resultado.escolhido?.id).toBe(9);
+    expect(resultado.generico).toBe(false);
+  });
+  it("não substitui outras marcas ausentes automaticamente", () => {
+    expect(escolherAlimento("iogurte marca ipanema", [alimento(1, "Iogurte")]).escolhido).toBeUndefined();
+  });
   it("prioriza leite integral sobre leite de coco", () => {
     expect(ordenarAlimentos("leite", [alimento(523, "Leite, de coco"), alimento(458, "Leite, de vaca, integral")])[0]?.id).toBe(458);
   });

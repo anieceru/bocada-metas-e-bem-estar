@@ -1,5 +1,7 @@
 # Bocada roadmap
 
+- [ ] Mostrar leite integral em português e usar queijo Minas genérico quando a marca estiver ausente
+
 - [x] Corrigir interpretação de leite, café com açúcar, cuscuz e marcas; reduzir espera e verificar registro
 
 - [x] Reordenar macros: proteínas, carbos e gorduras
