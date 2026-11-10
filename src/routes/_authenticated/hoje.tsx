@@ -61,11 +61,19 @@ function Hoje() {
           const meta = data.metas?.[key];
           return <li key={key} className="rounded-lg border bg-surface p-4"><p className="text-xs text-muted-foreground">{nome}</p><p className="mt-1 text-lg font-semibold">{Math.round(total).toLocaleString("pt-BR")} <span className="text-xs font-normal text-muted-foreground">{meta != null ? `/ ${meta.toLocaleString("pt-BR")} ` : ""}{unidade}</span></p></li>;
         })}</ul>
-        <details className="mt-4 border-b pb-4 text-sm"><summary className="cursor-pointer font-medium">Micronutrientes · ver mais</summary>
-          <p className="mt-3 text-muted-foreground">Vitaminas e minerais não estão disponíveis nos catálogos importados. Não são considerados zero.</p>
-          <p className="mt-3 font-medium">Fibras <span className="font-normal text-muted-foreground">{fibras.length ? `${fibras.reduce((s, r) => s + Number(r.fibra_g), 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} g` : "— não informado"}</span></p>
-          {fibras.length > 0 && fibras.length < registros.length && <p className="mt-1 text-xs text-muted-foreground">Total parcial: {fibras.length} de {registros.length} alimentos com informação de fibras.</p>}
-        </details>
+        <ul className="mt-3 grid grid-cols-2 gap-3">
+          <li className="rounded-lg border bg-surface p-4">
+            <p className="text-xs text-muted-foreground">Fibras</p>
+            <p className="mt-1 text-lg font-semibold">{fibras.length ? fibras.reduce((s, r) => s + Number(r.fibra_g), 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) : "—"} <span className="text-xs font-normal text-muted-foreground">g</span></p>
+            {!fibras.length && <p className="mt-1 text-xs text-muted-foreground">Não informado</p>}
+            {fibras.length > 0 && fibras.length < registros.length && <p className="mt-1 text-xs text-muted-foreground">Total parcial: {fibras.length} de {registros.length} alimentos.</p>}
+          </li>
+          <li className="rounded-lg border bg-surface p-4">
+            <p className="text-xs text-muted-foreground">Meta diária de água</p>
+            <p className="mt-1 text-lg font-semibold">{data.metas?.agua_ml != null ? data.metas.agua_ml.toLocaleString("pt-BR") : "—"} <span className="text-xs font-normal text-muted-foreground">ml</span></p>
+            {data.metas?.agua_ml == null && <Link to="/configuracoes" className="mt-1 inline-block text-xs text-primary underline">Definir meta</Link>}
+          </li>
+        </ul>
       </>}
     </section>
     <section className="mt-6">
