@@ -122,7 +122,7 @@ export function MetasForm({
       )}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between"><Label htmlFor="meta-kcal">Calorias diárias (kcal)</Label><span className="text-sm text-muted-foreground">100%</span></div>
-        <Input id="meta-kcal" inputMode="numeric" placeholder="—" value={vals.kcal} onChange={(e) => setVals({ ...vals, kcal: e.target.value.replace(/\D/g, "") })} />
+        <Input id="meta-kcal" inputMode="numeric" placeholder="—" value={vals["kcal"]} onChange={(e) => setVals({ ...vals, kcal: e.target.value.replace(/\D/g, "") })} />
       </div>
       <section className="space-y-3 border-y py-4" aria-label="Distribuição de macros">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -150,7 +150,7 @@ export function MetasForm({
       </section>
       <div className="space-y-1.5">
         <Label htmlFor="meta-agua_ml">Água diária (ml)</Label>
-        <Input id="meta-agua_ml" inputMode="numeric" placeholder="—" value={vals.agua_ml} onChange={(e) => setVals({ ...vals, agua_ml: e.target.value.replace(/\D/g, "") })} />
+        <Input id="meta-agua_ml" inputMode="numeric" placeholder="—" value={vals["agua_ml"]} onChange={(e) => setVals({ ...vals, agua_ml: e.target.value.replace(/\D/g, "") })} />
       </div>
       {calc && ritmo != null && (
         <p className="text-sm" aria-live="polite">
