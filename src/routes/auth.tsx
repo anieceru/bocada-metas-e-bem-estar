@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell, GoogleIcon, cooldownRestante, limparFalhas, registrarFalha } from "@/components/AuthShell";
 import { validarSenha } from "@/lib/config";
+import { Mail } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -83,16 +84,33 @@ function AuthPage() {
     navigate({ to: "/hoje", replace: true });
   }
 
+  async function microsoft() {
+    setErro(null);
+    try {
+      const r = await lovable.auth.signInWithOAuth("microsoft", { redirect_uri: window.location.origin });
+      if (r.error) return setErro("Não foi possível entrar com Microsoft agora.");
+      if (r.redirected) return;
+      const { data } = await supabase.auth.getUser();
+      if (data.user) navigate({ to: "/hoje", replace: true });
+    } catch {
+      setErro("Não foi possível entrar com Microsoft agora. Tente novamente.");
+    }
+  }
+
   return (
     <AuthShell title={modo === "entrar" ? "Que bom te ver" : "Criar conta"}>
-      <button
+      <Button
         type="button"
         onClick={google}
-        className="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-[#747775] bg-[#FFFFFF] px-3 text-sm font-medium text-[#1F1F1F] dark:border-[#8E918F] dark:bg-[#131314] dark:text-[#E3E3E3]"
+        variant="outline"
+        className="h-11 w-full gap-2.5"
       >
         <GoogleIcon />
         Continuar com Google
-      </button>
+      </Button>
+      <Button type="button" variant="outline" onClick={microsoft} className="mt-3 h-11 w-full gap-2.5">
+        <Mail className="h-4 w-4" aria-hidden /> Continuar com Microsoft / Outlook
+      </Button>
       <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
         <span className="h-px flex-1 bg-border" /> ou <span className="h-px flex-1 bg-border" />
       </div>

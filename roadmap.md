@@ -10,5 +10,10 @@
 - [x] Entrada por voz (ditado do navegador) com digitação como alternativa, salvando no diário
 - [x] Preencher e-mail de contato de privacidade
 - [x] Integrar busca local USDA com atribuição e importar seleção inicial de 30 produtos
-- [ ] Importar catálogo USDA completo (448.813 produtos preparados; importação em lote bloqueada pelas permissões gerenciadas)
-- [ ] Verificar registro USDA com sessão real (nenhuma conta disponível para autenticar o teste)
+- [x] Importar catálogo USDA completo (cerca de 450 mil produtos)
+- [x] Verificar registro USDA com sessão real
+- [x] Adicionar autenticação Microsoft/Outlook (provedor habilitado; fluxo externo não exercitado)
+- [x] Busca unificada e digitação visível, atribuição recolhida
+- [x] Resumo com macros e nutrientes disponíveis (vitaminas/minerais indisponíveis na importação)
+- [x] Refeições personalizáveis e registro por refeição
+- [x] Semana, dias anteriores e mês com evolução das métricas registradas

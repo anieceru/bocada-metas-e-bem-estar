@@ -148,6 +148,7 @@ export type Database = {
           objetivo: string | null
           onboarding_concluido: boolean
           peso_kg: number | null
+          refeicoes: string[]
           sexo: string | null
           tema: string
           tom: string
@@ -166,6 +167,7 @@ export type Database = {
           objetivo?: string | null
           onboarding_concluido?: boolean
           peso_kg?: number | null
+          refeicoes?: string[]
           sexo?: string | null
           tema?: string
           tom?: string
@@ -184,6 +186,7 @@ export type Database = {
           objetivo?: string | null
           onboarding_concluido?: boolean
           peso_kg?: number | null
+          refeicoes?: string[]
           sexo?: string | null
           tema?: string
           tom?: string
@@ -197,12 +200,14 @@ export type Database = {
           criado_em: string
           descricao: string
           dia: string
+          fibra_g: number | null
           gorduras_g: number
           gramas: number
           id: string
           kcal: number
           origem: string
           proteinas_g: number
+          refeicao: string
           usda_fdc_id: number | null
           user_id: string
         }
@@ -212,12 +217,14 @@ export type Database = {
           criado_em?: string
           descricao: string
           dia: string
+          fibra_g?: number | null
           gorduras_g?: number
           gramas: number
           id?: string
           kcal?: number
           origem?: string
           proteinas_g?: number
+          refeicao?: string
           usda_fdc_id?: number | null
           user_id: string
         }
@@ -227,12 +234,14 @@ export type Database = {
           criado_em?: string
           descricao?: string
           dia?: string
+          fibra_g?: number | null
           gorduras_g?: number
           gramas?: number
           id?: string
           kcal?: number
           origem?: string
           proteinas_g?: number
+          refeicao?: string
           usda_fdc_id?: number | null
           user_id?: string
         }
