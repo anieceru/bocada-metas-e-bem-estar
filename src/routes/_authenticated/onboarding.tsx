@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MetasForm } from "@/components/MetasForm";
 import { excluirConta } from "@/lib/conta.functions";
+import { ATIVIDADES } from "@/lib/calculo-metas";
 import { OBJETIVOS, TEXTO_CONSENTIMENTO, VERSAO_CONSENTIMENTO, type Metas } from "@/lib/config";
 import { toast } from "sonner";
 import { privatePageHead } from "@/lib/page-head";
@@ -43,6 +44,7 @@ function Onboarding() {
   const [altura, setAltura] = useState("");
   const [sexo, setSexo] = useState<string | null>(null);
   const [objetivo, setObjetivo] = useState<string | null>(null);
+  const [atividade, setAtividade] = useState<string | null>(null);
   const [tom, setTom] = useState<"neutro" | "animado">("neutro");
   const [erro, setErro] = useState<string | null>(null);
 
@@ -59,11 +61,12 @@ function Onboarding() {
           altura_cm: num(altura),
           sexo,
           objetivo,
+          atividade,
           consentimento_saude_em: new Date().toISOString(),
           consentimento_saude_versao: VERSAO_CONSENTIMENTO,
         }
       : {};
-    const { error } = await supabase.from("profiles").update({ ...base, ...saude }).eq("id", u.user.id);
+    const { error } = await supabase.from("profiles").update({ ...base, ...saude } as never).eq("id", u.user.id);
     if (error) return void toast.error("Não foi possível salvar. Tente de novo.");
     if (consente && metas) {
       const { error: e2 } = await supabase.from("metas").upsert({ user_id: u.user.id, ...metas }, { onConflict: "user_id" });
@@ -163,6 +166,14 @@ function Onboarding() {
             <Opcao key={v} ativo={sexo === v} onClick={() => setSexo(sexo === v ? null : (v as string))}>{l}</Opcao>
           ))}
         </div>
+        <p className="mt-6 text-sm font-medium">Nível de atividade</p>
+        <div className="mt-2 space-y-2">
+          {ATIVIDADES.map((a) => (
+            <Opcao key={a.v} ativo={atividade === a.v} onClick={() => setAtividade(a.v)}>
+              {a.l}<span className="mt-0.5 block text-xs font-normal text-muted-foreground">{a.d}</span>
+            </Opcao>
+          ))}
+        </div>
         <p className="mt-6 text-sm font-medium">Objetivo</p>
         <div className="mt-2 space-y-2">
           {OBJETIVOS.map((o) => (
@@ -179,7 +190,7 @@ function Onboarding() {
         <h1 className="text-2xl font-bold">Como prefere que o app fale com você?</h1>
         <div className="mt-6 space-y-2">
           <Opcao ativo={tom === "neutro"} onClick={() => setTom("neutro")}>Neutro</Opcao>
-          <Opcao ativo={tom === "animado"} onClick={() => setTom("animado")}>Um pouco mais animado</Opcao>
+          <Opcao ativo={tom === "animado"} onClick={() => setTom("animado")}>Animado</Opcao>
         </div>
         <Button className="mt-6 h-11 w-full rounded-xl" onClick={() => (consente ? setPasso("metas") : concluir(null))}>
           {consente ? "Continuar" : "Concluir"}
@@ -193,6 +204,7 @@ function Onboarding() {
       <p className="mt-1 mb-6 text-sm text-muted-foreground">Digite as que quiser. Tudo pode ser preenchido depois.</p>
       <MetasForm
         inicial={{}}
+        calculo={{ idade: num(idade), peso_kg: num(peso), altura_cm: num(altura), sexo, atividade, objetivo }}
         rotuloSalvar="Salvar e concluir"
         onSalvar={(m) => concluir(m)}
         extra={

@@ -1,0 +1,17 @@
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_objetivo_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_objetivo_check
+  CHECK (objetivo IS NULL OR objetivo IN ('emagrecer','manter','ganhar_massa','ganhar'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS atividade text
+  CHECK (atividade IS NULL OR atividade IN ('sedentario','leve','moderado','muito'));
+
+CREATE OR REPLACE FUNCTION public.profiles_guard()
+RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN
+  NEW.atualizado_em := now();
+  IF NEW.consentimento_saude_em IS NULL THEN
+    NEW.idade := NULL; NEW.peso_kg := NULL; NEW.altura_cm := NULL;
+    NEW.sexo := NULL; NEW.objetivo := NULL; NEW.atividade := NULL;
+    NEW.consentimento_saude_versao := NULL;
+  END IF;
+  RETURN NEW;
+END $$;

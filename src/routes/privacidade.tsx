@@ -7,7 +7,7 @@ export const Route = createFileRoute("/privacidade")({
   component: () => (
     <LegalPage titulo="Política de Privacidade">
       <h2>Quais dados tratamos</h2>
-      <p>E-mail e dados de acesso para sua conta. Com sua autorização específica: idade, peso, altura, sexo (opcional), objetivo, metas diárias e refeições registradas. Na entrada por voz, o ditado é feito pelo recurso de reconhecimento de fala do seu navegador; o Bocada recebe apenas o texto. Preferências do app (tom, tema, tamanho do copo).</p>
+      <p>E-mail e dados de acesso para sua conta. Com sua autorização específica: idade, peso, altura, sexo (opcional), nível de atividade, objetivo, metas diárias e refeições registradas. Na entrada por voz, o ditado é feito pelo recurso de reconhecimento de fala do seu navegador; o Bocada recebe apenas o texto. Preferências do app (tom, tema, tamanho do copo).</p>
       <h2>Dados de saúde (LGPD, art. 11)</h2>
       <p>Só guardamos dados de saúde com seu consentimento específico, registrado com data, hora e versão do texto (atual: {VERSAO_CONSENTIMENTO}). Você pode retirar a autorização em Configurações; os dados são apagados.</p>
       <h2>Para que usamos</h2>

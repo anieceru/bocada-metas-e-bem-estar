@@ -17,6 +17,7 @@ import {
 import { perfilQuery } from "@/lib/profile";
 import { excluirConta } from "@/lib/conta.functions";
 import { aplicarTema, lerTema, type Tema } from "@/lib/theme";
+import { ATIVIDADES } from "@/lib/calculo-metas";
 import { limitesEfetivos, OBJETIVOS, TEXTO_CONSENTIMENTO, VERSAO_CONSENTIMENTO, type Metas } from "@/lib/config";
 import { privatePageHead } from "@/lib/page-head";
 
@@ -64,6 +65,7 @@ function Config() {
   const [altura, setAltura] = useState(p.altura_cm?.toString() ?? "");
   const [sexo, setSexo] = useState<string | null>(p.sexo);
   const [objetivo, setObjetivo] = useState<string | null>(p.objetivo);
+  const [atividade, setAtividade] = useState<string | null>(atividadeDe(p));
   const [tom, setTom] = useState(p.tom);
   const [copo, setCopo] = useState(p.copo_ml.toString());
   const [novoConsent, setNovoConsent] = useState(false);
@@ -75,13 +77,13 @@ function Config() {
     e.preventDefault();
     const copoN = Number(copo);
     if (!(copoN >= 50 && copoN <= 2000)) return void toast.error("Tamanho do copo entre 50 e 2000 ml.");
-    const upd: { tom: string; copo_ml: number; idade?: number; peso_kg?: number | null; altura_cm?: number | null; sexo?: string | null; objetivo?: string | null } = { tom, copo_ml: copoN };
+    const upd: { tom: string; copo_ml: number; idade?: number; peso_kg?: number | null; altura_cm?: number | null; sexo?: string | null; objetivo?: string | null; atividade?: string | null } = { tom, copo_ml: copoN };
     if (temConsent) {
       const i = num(idade);
       if (i == null || i < 18 || i > 120) return void toast.error("Informe uma idade válida (18 ou mais).");
-      Object.assign(upd, { idade: i, peso_kg: num(peso), altura_cm: num(altura), sexo, objetivo });
+      Object.assign(upd, { idade: i, peso_kg: num(peso), altura_cm: num(altura), sexo, objetivo, atividade });
     }
-    const { error } = await supabase.from("profiles").update(upd).eq("id", uid);
+    const { error } = await supabase.from("profiles").update(upd as never).eq("id", uid);
     if (error) return void toast.error("Não foi possível salvar. Confira os valores.");
     toast.success("Perfil salvo.");
     recarregar();
@@ -101,7 +103,7 @@ function Config() {
   async function retirarConsentimento() {
     const { error } = await supabase.from("profiles").update({ consentimento_saude_em: null }).eq("id", uid);
     if (error) return void toast.error("Não foi possível retirar agora.");
-    setIdade(""); setPeso(""); setAltura(""); setSexo(null); setObjetivo(null);
+    setIdade(""); setPeso(""); setAltura(""); setSexo(null); setObjetivo(null); setAtividade(null);
     toast.success("Autorização retirada e dados de saúde apagados.");
     recarregar();
   }
@@ -170,11 +172,16 @@ function Config() {
                 <Seletor valor={sexo} onChange={(v) => setSexo(sexo === v ? null : v)} opcoes={[{ v: "feminino", l: "Feminino" }, { v: "masculino", l: "Masculino" }, { v: "outro", l: "Outro" }]} />
               </div>
               <div className="space-y-1.5"><Label>Objetivo</Label><Seletor valor={objetivo} onChange={setObjetivo} opcoes={OBJETIVOS} /></div>
+              <div className="space-y-1.5">
+                <Label>Nível de atividade</Label>
+                <Seletor valor={atividade} onChange={setAtividade} opcoes={ATIVIDADES} />
+                {atividade && <p className="text-xs text-muted-foreground">{ATIVIDADES.find((a) => a.v === atividade)?.d}</p>}
+              </div>
             </>
           ) : (
             <p className="text-sm text-muted-foreground">Dados de saúde não são guardados porque não há autorização. Veja "Dados de saúde" abaixo.</p>
           )}
-          <div className="space-y-1.5"><Label>Tom do app</Label><Seletor valor={tom} onChange={setTom} opcoes={[{ v: "neutro", l: "Neutro" }, { v: "animado", l: "Mais animado" }]} /></div>
+          <div className="space-y-1.5"><Label>Tom do app</Label><Seletor valor={tom} onChange={setTom} opcoes={[{ v: "neutro", l: "Neutro" }, { v: "animado", l: "Animado" }]} /></div>
           <div className="space-y-1.5"><Label htmlFor="c-copo">Tamanho do copo de água (ml)</Label><Input id="c-copo" inputMode="numeric" value={copo} onChange={(e) => setCopo(e.target.value.replace(/\D/g, ""))} /></div>
           <Button type="submit" className="h-11 w-full rounded-xl">Salvar perfil</Button>
         </form>
@@ -183,7 +190,7 @@ function Config() {
       <Secao titulo="Metas diárias">
         {temConsent ? (
           <>
-            <MetasForm key={data.metas?.atualizado_em ?? "novo"} inicial={data.metas ?? {}} limites={limitesEfetivos(p.limites_alerta)} rotuloSalvar="Salvar metas" onSalvar={salvarMetas} />
+            <MetasForm key={data.metas?.atualizado_em ?? "novo"} inicial={data.metas ?? {}} limites={limitesEfetivos(p.limites_alerta)} calculo={{ idade: p.idade, peso_kg: p.peso_kg, altura_cm: p.altura_cm, sexo: p.sexo, atividade: atividadeDe(p), objetivo: p.objetivo }} rotuloSalvar="Salvar metas" onSalvar={salvarMetas} />
             <Link to="/limites" className="mt-4 block text-center text-sm text-primary underline">Ajustar limites de alerta</Link>
           </>
         ) : (
@@ -251,4 +258,9 @@ function Config() {
       </Secao>
     </AppShell>
   );
+}
+
+// Lê o nível de atividade mesmo antes de os tipos do banco serem atualizados.
+function atividadeDe(p: object): string | null {
+  return (p as { atividade?: string | null }).atividade ?? null;
 }
