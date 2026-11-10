@@ -22,6 +22,7 @@ import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHojeRouteImport } from './routes/_authenticated/hoje'
 import { Route as AuthenticatedLimitesRouteImport } from './routes/_authenticated/limites'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as ApiPublicJobsLembretesRouteImport } from './routes/api/public/jobs/lembretes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -88,6 +89,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicJobsLembretesRoute = ApiPublicJobsLembretesRouteImport.update({
+  id: '/api/public/jobs/lembretes',
+  path: '/api/public/jobs/lembretes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/hoje': typeof AuthenticatedHojeRoute
   '/limites': typeof AuthenticatedLimitesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/public/jobs/lembretes': typeof ApiPublicJobsLembretesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/hoje': typeof AuthenticatedHojeRoute
   '/limites': typeof AuthenticatedLimitesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/public/jobs/lembretes': typeof ApiPublicJobsLembretesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated/hoje': typeof AuthenticatedHojeRoute
   '/_authenticated/limites': typeof AuthenticatedLimitesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/public/jobs/lembretes': typeof ApiPublicJobsLembretesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/hoje'
     | '/limites'
     | '/onboarding'
+    | '/api/public/jobs/lembretes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/hoje'
     | '/limites'
     | '/onboarding'
+    | '/api/public/jobs/lembretes'
   id:
     | '__root__'
     | '/'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hoje'
     | '/_authenticated/limites'
     | '/_authenticated/onboarding'
+    | '/api/public/jobs/lembretes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermosRoute: typeof TermosRoute
+  ApiPublicJobsLembretesRoute: typeof ApiPublicJobsLembretesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/jobs/lembretes': {
+      id: '/api/public/jobs/lembretes'
+      path: '/api/public/jobs/lembretes'
+      fullPath: '/api/public/jobs/lembretes'
+      preLoaderRoute: typeof ApiPublicJobsLembretesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -314,6 +334,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermosRoute: TermosRoute,
+  ApiPublicJobsLembretesRoute: ApiPublicJobsLembretesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -3,8 +3,8 @@
 // ajuste aqui quando os valores definitivos forem decididos.
 export const LIMITES_METAS = {
   kcal: { min: 1200, max: 4500, unidade: "kcal", nome: "Calorias" },
-  carboidratos_g: { min: 50, max: 600, unidade: "g", nome: "Carboidratos" }, // PROVISÓRIO
   proteinas_g: { min: 30, max: 300, unidade: "g", nome: "Proteínas" }, // PROVISÓRIO
+  carboidratos_g: { min: 50, max: 600, unidade: "g", nome: "Carbos" }, // PROVISÓRIO
   gorduras_g: { min: 20, max: 200, unidade: "g", nome: "Gorduras" }, // PROVISÓRIO
   agua_ml: { min: 1000, max: 5000, unidade: "ml", nome: "Água" }, // PROVISÓRIO
 } as const;
@@ -33,7 +33,7 @@ export const TEXTO_CONSENTIMENTO =
 
 // ===== Limites personalizados (cada pessoa ajusta os de macros e água) =====
 export type Limites = Record<ChaveMeta, { min: number; max: number }>;
-export const CHAVES_LIMITES_AJUSTAVEIS = ["carboidratos_g", "proteinas_g", "gorduras_g", "agua_ml"] as const;
+export const CHAVES_LIMITES_AJUSTAVEIS = ["proteinas_g", "carboidratos_g", "gorduras_g", "agua_ml"] as const;
 
 export function limitesEfetivos(personalizados: unknown): Limites {
   const base = Object.fromEntries(

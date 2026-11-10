@@ -68,6 +68,18 @@ function Limites() {
         <Button type="button" variant="ghost" className="w-full rounded-xl" onClick={restaurar}>Restaurar padrão</Button>
         <Link to="/configuracoes" className="block text-center text-sm text-primary underline">Voltar para Configurações</Link>
       </form>
+      <section id="lidar" className="mt-6 space-y-3 border-t pt-5 text-sm">
+        <h2 className="text-base font-semibold">E se eu passar de uma meta?</h2>
+        <p>Uma meta é uma referência, não uma nota sobre você. Um dia diferente não define sua evolução.</p>
+        <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
+          <li>Confira o registro: quantidade, unidade e alimento podem precisar de ajuste.</li>
+          <li>Siga com suas próximas refeições habituais. Não é preciso pular refeições, fazer jejum ou aumentar o exercício para compensar.</li>
+          <li>Se acontece com frequência, vale rever as metas com um nutricionista para que façam sentido na sua rotina.</li>
+          <li>Para água, distribua ao longo do dia. Não tente compensar bebendo grandes volumes de uma vez; respeite orientações de restrição de líquidos.</li>
+        </ul>
+        <p className="text-xs text-muted-foreground">Os limites desta tela alertam sobre metas configuradas fora da faixa; não são limites médicos de segurança. As notificações de consumo usam suas metas diárias.</p>
+        <Button asChild variant="outline" className="w-full"><Link to="/configuracoes">Escolher notificações de alerta</Link></Button>
+      </section>
     </AppShell>
   );
 }
