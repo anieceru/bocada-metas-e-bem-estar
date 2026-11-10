@@ -13,7 +13,7 @@ describe("lembretes", () => {
     expect(lembretesDaHora({ ...base, modo: "diaria" }, 8, "2026-11-10", refeicoes)).toEqual([]);
   });
   it("envia lembretes das refeições e da água marcados", () => {
-    expect(lembretesDaHora(base, 8, "2026-11-10", refeicoes).map((l) => l.titulo)).toEqual(["Café da manhã"]);
+    expect(lembretesDaHora(base, 8, "2026-11-10", refeicoes).map((l) => l.chave)).toEqual(["2026-11-10:refeicao:Café da manhã"]);
     expect(lembretesDaHora(base, 13, "2026-11-10", refeicoes).map((l) => l.titulo)).toEqual(["Água"]);
     expect(lembretesDaHora({ ...base, agua: false }, 13, "2026-11-10", refeicoes)).toEqual([]);
   });

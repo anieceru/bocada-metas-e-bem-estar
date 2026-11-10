@@ -19,7 +19,7 @@ export function lembretesDaHora(p: PrefsNotificacao, hora: number, dia: string, 
   const out: Lembrete[] = [];
   if (p.refeicoes) for (const nome of refeicoes) {
     const h = p.horas_refeicoes[nome] ?? HORAS_REFEICAO_PADRAO[nome];
-    if (h === hora) out.push({ chave: `${dia}:refeicao:${nome}`, titulo: nome, corpo: "Quando puder, registre o que comeu.", caminho: "/hoje" });
+    if (h === hora) out.push({ chave: `${dia}:refeicao:${nome}`, titulo: "Refeição", corpo: "Quando puder, registre o que comeu.", caminho: "/hoje" });
   }
   if (p.agua && HORAS_AGUA.includes(hora)) out.push({ chave: `${dia}:agua:${hora}`, titulo: "Água", corpo: "Um lembrete para beber água.", caminho: "/hoje" });
   return out;

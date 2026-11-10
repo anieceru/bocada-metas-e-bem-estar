@@ -8,7 +8,7 @@ export async function enviarPush(token: string, titulo: string, corpo: string, c
   const res = await fetch(`${GATEWAY_URL}/v1/projects/_/messages:send`, {
     method: "POST",
     headers: { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": connKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ message: { token, notification: { title: titulo, body: corpo }, data: { caminho }, webpush: { fcm_options: { link: caminho } } } }),
+    body: JSON.stringify({ message: { token, notification: { title: titulo, body: corpo }, data: { caminho } } }),
   });
   if (res.ok) return true;
   const texto = await res.text();

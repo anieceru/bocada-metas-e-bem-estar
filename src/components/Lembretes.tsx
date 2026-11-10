@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { HORAS_AGUA, HORAS_REFEICAO_PADRAO, type PrefsNotificacao } from "@/lib/notificacoes";
 import { ativarPush } from "@/lib/firebase-config";
+import type { Json } from "@/integrations/supabase/types";
 
 const horas = Array.from({ length: 24 }, (_, h) => h);
 const MSG_PUSH: Record<string, string> = {
@@ -34,8 +35,8 @@ export function Lembretes({ userId, refeicoes }: { userId: string; refeicoes: st
   return <Formulario key={data.p?.atualizado_em ?? "novo"} userId={userId} refeicoes={refeicoes} inicial={data.p} dispositivos={data.dispositivos} onSalvo={() => qc.invalidateQueries({ queryKey: ["notificacoes", userId] })} />;
 }
 
-function Formulario({ userId, refeicoes, inicial, dispositivos, onSalvo }: { userId: string; refeicoes: string[]; inicial: (PrefsNotificacao & { canal_push: boolean }) | null; dispositivos: number; onSalvo: () => void }) {
-  const [modo, setModo] = useState<PrefsNotificacao["modo"]>(inicial?.modo ?? "nenhuma");
+function Formulario({ userId, refeicoes, inicial, dispositivos, onSalvo }: { userId: string; refeicoes: string[]; inicial: ({ modo: string; refeicoes: boolean; agua: boolean; alertas: boolean; hora_diaria: number; horas_refeicoes: Json; canal_push: boolean }) | null; dispositivos: number; onSalvo: () => void }) {
+  const [modo, setModo] = useState<PrefsNotificacao["modo"]>(inicial?.modo === "diaria" || inicial?.modo === "personalizada" ? inicial.modo : "nenhuma");
   const [ref, setRef] = useState(inicial?.refeicoes ?? true);
   const [agua, setAgua] = useState(inicial?.agua ?? false);
   const [alertas, setAlertas] = useState(inicial?.alertas ?? false);
