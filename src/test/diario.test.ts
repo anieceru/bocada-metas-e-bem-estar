@@ -20,10 +20,10 @@ describe("diário", () => {
     expect(interpretarItem("duas colheres de sopa de açúcar")).toEqual({ termo: "acucar", gramas: 30, medidaOriginal: "duas colheres de sopa" });
   });
   it.each(["no almoço", "no café da manhã", "no lanche", "no jantar"])("não procura %s como alimento", (refeicao) => {
-    expect(dividirItens(`${refeicao} comi 150 g de arroz`).map(interpretarItem).filter(p => p.termo)).toEqual([{ termo: "arroz", gramas: 150 }]);
+    expect(dividirItens(`${refeicao} comi 150 g de arroz`).map(item => interpretarItem(item)).filter(p => p.termo)).toEqual([{ termo: "arroz", gramas: 150 }]);
   });
   it("ignora né e ne como marcas da fala, sem sugerir nêspera", () => {
-    expect(dividirItens("arroz, né, feijão, ne").map(interpretarItem).filter(p => p.termo).map(p => p.termo)).toEqual(["arroz", "feijao"]);
+    expect(dividirItens("arroz, né, feijão, ne").map(item => interpretarItem(item)).filter(p => p.termo).map(p => p.termo)).toEqual(["arroz", "feijao"]);
     expect(interpretarItem("nêspera").termo).toBe("nespera");
   });
   it("mantém a referência USDA separada da TACO ao registrar", () => {
@@ -44,10 +44,10 @@ describe("diário", () => {
     expect(dividirItens("150 gramas de arroz, feijão e uma banana")).toEqual(["150 gramas de arroz", "feijao", "uma banana"]);
   });
   it("separa frases, retoma o café sem duplicá-lo e inclui açúcar e cuscuz", () => {
-    expect(dividirItens("leite. café. café tinha açúcar. cuscuz. queijo minas marca ipanema.").map(interpretarItem).map(p => p.termo)).toEqual(["leite", "cafe", "acucar", "cuscuz", "queijo minas marca ipanema"]);
+    expect(dividirItens("leite. café. café tinha açúcar. cuscuz. queijo minas marca ipanema.").map(item => interpretarItem(item)).map(p => p.termo)).toEqual(["leite", "cafe", "acucar", "cuscuz", "queijo minas marca ipanema"]);
   });
   it("não separa a vírgula decimal da quantidade", () => {
-    expect(dividirItens("150,5 g de cuscuz, café").map(interpretarItem)[0]).toEqual({ termo: "cuscuz", gramas: 150.5 });
+    expect(dividirItens("150,5 g de cuscuz, café").map(item => interpretarItem(item))[0]).toEqual({ termo: "cuscuz", gramas: 150.5 });
   });
   it("extrai gramas e termo", () => {
     expect(interpretarItem("150 gramas de arroz")).toEqual({ termo: "arroz", gramas: 150 });
