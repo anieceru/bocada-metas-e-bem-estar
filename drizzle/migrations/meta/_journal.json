@@ -71,6 +71,13 @@
       "when": 1794343580902,
       "tag": "0009_lembretes_notificacoes",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794347429225,
+      "tag": "0010_consentimento_interpretacao_ia",
+      "breakpoints": true
     }
   ]
 }

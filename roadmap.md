@@ -1,5 +1,9 @@
 # Bocada roadmap
 
+- [ ] Autorização individual separada e retirável para interpretar descrições por IA
+- [ ] Interpretação por AI Gateway de alimentos, marcas, quantidades e refeições em pt-BR
+- [ ] Conferência e testes com frases coloquiais, sem interjeições como alimentos
+
 - [x] Interpretar refeições mencionadas na frase e ignorar “né” sem buscar alimentos incorretos
 
 - [x] Mostrar leite integral em português e usar queijo Minas genérico quando a marca estiver ausente
