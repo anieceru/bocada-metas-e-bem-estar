@@ -53,7 +53,7 @@ function Hoje() {
     <Button asChild className="mt-4"><Link to="/configuracoes">Ir para Configurações</Link></Button>
   </section></AppShell>;
   return <AppShell titulo={new Date(`${dia}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}>
-    <RegistrarRefeicao key={dia + refeicoes.join("|")} userId={data.user.id} dia={dia} refeicoes={refeicoes} />
+    <RegistrarRefeicao key={dia + refeicoes.join("|")} userId={data.user.id} dia={dia} refeicoes={refeicoes} copoMl={data.perfil.copo_ml ?? undefined} />
     <section className="mt-5 border-t pt-5">
       <h2 className="text-base font-semibold">Resumo do dia</h2>
       {isError ? <p role="alert" className="mt-3 text-sm text-destructive">Não foi possível carregar este dia.</p> : isPending ? <p className="mt-3 text-sm text-muted-foreground">Carregando…</p> : <>
@@ -88,7 +88,7 @@ function Hoje() {
       })}
     </section>
     <Semana dia={dia} onChange={(d) => navigate({ search: { dia: d } })} />
-    <Dialog open={refeicaoAberta !== null} onOpenChange={(open) => { if (!open) setRefeicaoAberta(null); }}><DialogContent className="max-h-[90dvh] overflow-y-auto"><DialogTitle>{refeicaoAberta}</DialogTitle>{refeicaoAberta && <RegistrarRefeicao key={refeicaoAberta} userId={data.user.id} dia={dia} refeicoes={[...new Set([...refeicoes, refeicaoAberta])]} refeicaoInicial={refeicaoAberta} onSaved={() => setRefeicaoAberta(null)} />}</DialogContent></Dialog>
+    <Dialog open={refeicaoAberta !== null} onOpenChange={(open) => { if (!open) setRefeicaoAberta(null); }}><DialogContent className="max-h-[90dvh] overflow-y-auto"><DialogTitle>{refeicaoAberta}</DialogTitle>{refeicaoAberta && <RegistrarRefeicao key={refeicaoAberta} userId={data.user.id} dia={dia} refeicoes={[...new Set([...refeicoes, refeicaoAberta])]} refeicaoInicial={refeicaoAberta} copoMl={data.perfil.copo_ml ?? undefined} onSaved={() => setRefeicaoAberta(null)} />}</DialogContent></Dialog>
     <Dialog open={editando} onOpenChange={setEditando}><DialogContent className="max-h-[90dvh] overflow-y-auto"><DialogTitle>Editar refeições</DialogTitle>{editando && <EditarRefeicoes userId={data.user.id} nomes={refeicoes} onClose={() => setEditando(false)} />}</DialogContent></Dialog>
   </AppShell>;
 }
