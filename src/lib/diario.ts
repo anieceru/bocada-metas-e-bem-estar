@@ -117,7 +117,7 @@ export function interpretarItem(item: string, medidas?: Medidas): { termo: strin
     .split(" ")
     .filter((w) => w && !PALAVRAS_VAZIAS.has(w) && !/^\d/.test(w))
     .join(" ");
-  return { termo, gramas };
+  return medidaOriginal ? { termo, gramas, medidaOriginal } : { termo, gramas };
 }
 
 export function calcularNutrientes(a: AlimentoTaco, gramas: number) {
