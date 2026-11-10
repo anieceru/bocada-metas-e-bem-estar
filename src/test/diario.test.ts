@@ -21,11 +21,17 @@ describe("diário", () => {
   });
   it("mantém a referência USDA separada da TACO ao registrar", () => {
     const a = { id: 123456, descricao: "Produto USDA", kcal: 400, proteina_g: 10, lipideos_g: 20, carboidrato_g: 45, fonte: "usda" as const };
-    expect(referenciaAlimento(a)).toEqual({ alimento_id: null, usda_fdc_id: 123456 });
+    expect(referenciaAlimento(a)).toEqual({ alimento_id: null, usda_fdc_id: 123456, br_ean: null });
     expect(calcularNutrientes(a, 25)).toEqual({ kcal: 100, proteinas_g: 2.5, gorduras_g: 5, carboidratos_g: 11.3 });
   });
   it("preserva a referência TACO dos alimentos existentes", () => {
-    expect(referenciaAlimento({ id: 1, descricao: "Arroz", kcal: 128, proteina_g: 2.5, lipideos_g: 0.2, carboidrato_g: 28 })).toEqual({ alimento_id: 1, usda_fdc_id: null });
+    expect(referenciaAlimento({ id: 1, descricao: "Arroz", kcal: 128, proteina_g: 2.5, lipideos_g: 0.2, carboidrato_g: 28 })).toEqual({ alimento_id: 1, usda_fdc_id: null, br_ean: null });
+  });
+  it("mantém a referência de produto brasileiro separada das demais", () => {
+    expect(referenciaAlimento({ id: 7622210592729, descricao: "Biscoito recheado", kcal: 480, proteina_g: 5, lipideos_g: 19, carboidrato_g: 70, fonte: "br" })).toEqual({ alimento_id: null, usda_fdc_id: null, br_ean: 7622210592729 });
+  });
+  it.each(["no lanche da tarde", "no lanche da manhã"])("atribui %s a Lanches, sem buscar a refeição como alimento", (fala) => {
+    expect(interpretarFrase(`${fala} comi 30 g de bolacha`, "Café da manhã")).toEqual([{ termo: "bolacha", gramas: 30, refeicao: "Lanches" }]);
   });
   it("divide a fala em itens", () => {
     expect(dividirItens("150 gramas de arroz, feijão e uma banana")).toEqual(["150 gramas de arroz", "feijao", "uma banana"]);
