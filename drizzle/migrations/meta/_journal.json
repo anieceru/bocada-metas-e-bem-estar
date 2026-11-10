@@ -43,6 +43,13 @@
       "when": 1794000685388,
       "tag": "0005_reconstruir_indice_busca_usda",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794324335997,
+      "tag": "0006_objetivos_atividade",
+      "breakpoints": true
     }
   ]
 }
