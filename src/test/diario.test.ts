@@ -14,6 +14,12 @@ describe("diário", () => {
   it("divide a fala em itens", () => {
     expect(dividirItens("150 gramas de arroz, feijão e uma banana")).toEqual(["150 gramas de arroz", "feijao", "uma banana"]);
   });
+  it("separa frases, retoma o café sem duplicá-lo e inclui açúcar e cuscuz", () => {
+    expect(dividirItens("leite. café. café tinha açúcar. cuscuz. queijo minas marca ipanema.").map(interpretarItem).map(p => p.termo)).toEqual(["leite", "cafe", "acucar", "cuscuz", "queijo minas marca ipanema"]);
+  });
+  it("não separa a vírgula decimal da quantidade", () => {
+    expect(dividirItens("150,5 g de cuscuz, café").map(interpretarItem)[0]).toEqual({ termo: "cuscuz", gramas: 150.5 });
+  });
   it("extrai gramas e termo", () => {
     expect(interpretarItem("150 gramas de arroz")).toEqual({ termo: "arroz", gramas: 150 });
     expect(interpretarItem("uma banana")).toEqual({ termo: "banana", gramas: null });
