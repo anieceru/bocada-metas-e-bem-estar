@@ -12,6 +12,13 @@ describe("diário", () => {
   it("reconhece a refeição no fim da frase", () => {
     expect(interpretarFrase("comi arroz no almoço", "Jantar")[0]?.refeicao).toBe("Almoço");
   });
+  it("reconhece a refeição no início da fala, sem preposição, sem buscá-la como alimento", () => {
+    expect(interpretarFrase("café da manhã um copo de leite", "Lanches")).toEqual([{ termo: "leite", gramas: 200, refeicao: "Café da manhã", medidaOriginal: "1 copo" }]);
+  });
+  it("converte medidas caseiras em gramas usando o copo da pessoa", () => {
+    expect(interpretarItem("um copo de leite", { copoMl: 250 })).toEqual({ termo: "leite", gramas: 250, medidaOriginal: "1 copo" });
+    expect(interpretarItem("duas colheres de sopa de açúcar")).toEqual({ termo: "acucar", gramas: 30, medidaOriginal: "duas colheres de sopa" });
+  });
   it.each(["no almoço", "no café da manhã", "no lanche", "no jantar"])("não procura %s como alimento", (refeicao) => {
     expect(dividirItens(`${refeicao} comi 150 g de arroz`).map(interpretarItem).filter(p => p.termo)).toEqual([{ termo: "arroz", gramas: 150 }]);
   });
