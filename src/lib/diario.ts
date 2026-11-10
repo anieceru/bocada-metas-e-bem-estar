@@ -35,19 +35,27 @@ const NUMEROS: Record<string, number> = { cem: 100, duzentos: 200, duzentas: 200
 
 /** Divide uma fala/texto em itens: "arroz, feijão e 100 g de frango". */
 export function dividirItens(texto: string): string[] {
-  return normalizar(texto)
-    .split(/,|;|\s+e\s+|\s+mais\s+|\s+com\s+/)
+  const t = normalizar(texto).replace(/(\d)[,.](\d)/g, "$1decimal$2")
+    .replace(/\b(cafe|cha)\s+(?:tinha|tem|estava com|foi com)\s+/g, "$1 com ")
+    .replace(/\bsem\s+acucar\b/g, "")
+    .replace(/\bacucar\s+(?=cuscuz\b)/g, "acucar, ");
+  const partes = t
+    .split(/[.,;]|\s+e\s+|\s+mais\s+|\s+com\s+/)
+    .map(s => s.replace(/decimal/g, "."))
     .map((s) => s.trim())
     .filter((s) => s.length > 1);
+  // A repetição na frase seguinte descreve a mesma bebida, não outra porção.
+  return partes.filter((s, i) => !["cafe", "cha"].includes(s) || partes.indexOf(s) === i);
 }
 
 /** Extrai gramas (g ou ml, tratados 1:1) e os termos de busca de um item. */
 export function interpretarItem(item: string): { termo: string; gramas: number | null } {
   let gramas: number | null = null;
-  let t = ` ${item} `;
+  let t = ` ${normalizar(item)} `;
   const m = t.match(/\s(\d+(?:[.,]\d+)?|cem|duzent[oa]s|trezent[oa]s|quinhent[oa]s|cinquenta|mil)\s*(g|gr|gramas?|ml|mililitros?)\s/);
   if (m) {
-    const n = NUMEROS[m[1]!] ?? Number(m[1]!.replace(",", "."));
+    const valor = m[1];
+    const n = valor ? NUMEROS[valor] ?? Number(valor.replace(",", ".")) : 0;
     if (n > 0) gramas = n;
     t = t.replace(m[0], " ");
   }

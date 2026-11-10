@@ -1,0 +1,24 @@
+import { describe, expect, it } from "vitest";
+import { consultaAlimento, ordenarAlimentos, nutrientesDisponiveis, porcaoEstimada } from "@/lib/identificar-alimentos";
+const alimento = (id: number, descricao: string) => ({ id, descricao, kcal: 60, proteina_g: 3, lipideos_g: 3, carboidrato_g: 5 });
+describe("identificação local", () => {
+  it("prioriza leite integral sobre leite de coco", () => {
+    expect(ordenarAlimentos("leite", [alimento(523, "Leite, de coco"), alimento(458, "Leite, de vaca, integral")])[0]?.id).toBe(458);
+  });
+  it("prefere café pronto e não pó", () => {
+    expect(ordenarAlimentos("café", [alimento(511, "Café, pó, torrado"), alimento(471, "Café, infusão 10%")])[0]?.id).toBe(471);
+  });
+  it("prefere cuscuz de milho cozido", () => {
+    expect(ordenarAlimentos("cuscuz", [alimento(534, "Cuscuz, paulista"), alimento(533, "Cuscuz, de milho, cozido com sal")])[0]?.id).toBe(533);
+  });
+  it("busca e prioriza a marca Ipanema sem incorporá-la ao nome genérico", () => {
+    expect(consultaAlimento("queijo minas marca ipanema")).toEqual({ alimento: "queijo minas", marca: "ipanema" });
+    expect(ordenarAlimentos("queijo minas marca ipanema", [alimento(461, "Queijo, minas, frescal"), { ...alimento(9, "Queijo minas"), marca: "Ipanema" }])[0]?.id).toBe(9);
+  });
+  it("não trata nutrientes ausentes como zero", () => {
+    expect(nutrientesDisponiveis({ ...alimento(458, "Leite"), kcal: null })).toBe(false);
+  });
+  it("estima açúcar separadamente em 5 g, nunca 100 g", () => {
+    expect(porcaoEstimada("açúcar")).toBe(5);
+  });
+});
