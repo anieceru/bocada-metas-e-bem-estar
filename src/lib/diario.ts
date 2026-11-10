@@ -28,14 +28,41 @@ export function normalizar(s: string): string {
 
 const PALAVRAS_VAZIAS = new Set([
   "comi", "tomei", "bebi", "almocei", "jantei", "lanchei", "eu", "hoje", "um", "uma", "uns", "umas",
-  "de", "do", "da", "dos", "das", "com", "no", "na", "o", "a", "os", "as", "pouco", "porcao", "prato",
+  "de", "do", "da", "dos", "das", "com", "no", "na", "o", "a", "os", "as", "pouco", "porcao", "prato", "ne",
 ]);
 
 const NUMEROS: Record<string, number> = { cem: 100, duzentos: 200, duzentas: 200, trezentos: 300, trezentas: 300, quinhentos: 500, quinhentas: 500, cinquenta: 50, mil: 1000 };
 
+const REFEICOES_FALA: Record<string, string> = {
+  "cafe da manha": "Café da manhã", almoco: "Almoço", lanche: "Lanches", lanches: "Lanches", jantar: "Jantar",
+};
+const MARCADOR_REFEICAO = /\b(?:no|na|para o|para a)\s+(cafe da manha|almoco|lanches?|jantar)\b/g;
+
+/** Refeições são contexto da fala, nunca termos de busca no catálogo. */
+export function interpretarFrase(texto: string, refeicaoInicial: string) {
+  const frase = normalizar(texto);
+  const marcadores = [...frase.matchAll(MARCADOR_REFEICAO)];
+  const resultado: { termo: string; gramas: number | null; refeicao: string }[] = [];
+  let inicio = 0;
+  let refeicao = refeicaoInicial;
+  for (const marcador of marcadores) {
+    const nome = marcador[1] ? REFEICOES_FALA[marcador[1]] : undefined;
+    if (!nome) continue;
+    const antes = frase.slice(inicio, marcador.index);
+    const fim = (marcador.index ?? 0) + marcador[0].length;
+    // “Comi arroz no almoço” também define a refeição do alimento anterior.
+    const destino = !frase.slice(fim).trim() ? nome : refeicao;
+    resultado.push(...dividirItens(antes).map(interpretarItem).filter(p => p.termo).map(p => ({ ...p, refeicao: destino })));
+    refeicao = nome;
+    inicio = fim;
+  }
+  resultado.push(...dividirItens(frase.slice(inicio)).map(interpretarItem).filter(p => p.termo).map(p => ({ ...p, refeicao })));
+  return resultado;
+}
+
 /** Divide uma fala/texto em itens: "arroz, feijão e 100 g de frango". */
 export function dividirItens(texto: string): string[] {
-  const t = normalizar(texto).replace(/(\d)[,.](\d)/g, "$1decimal$2")
+  const t = normalizar(texto).replace(MARCADOR_REFEICAO, " ").replace(/\bne\b/g, " ").replace(/(\d)[,.](\d)/g, "$1decimal$2")
     .replace(/\b(cafe|cha)\s+(?:tinha|tem|estava com|foi com)\s+/g, "$1 com ")
     .replace(/\bsem\s+acucar\b/g, "")
     .replace(/\bacucar\s+(?=cuscuz\b)/g, "acucar, ");
