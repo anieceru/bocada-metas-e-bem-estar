@@ -194,7 +194,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
       const g = Number(it.gramas.replace(",", "."));
       if (!a || !(g > 0 && g <= 5000)) return [];
       const nome = nomeAlimento(a.descricao);
-      const descricao = a.fonte === "usda" && a.marca ? `${nome} · ${a.marca}` : nome;
+      const descricao = (a.fonte === "usda" || a.fonte === "br") && a.marca ? `${nome} · ${a.marca}` : nome;
       return [{ user_id: userId, dia, refeicao: it.refeicao, ...referenciaAlimento(a), descricao: descricao.slice(0, 200), gramas: g, origem, ...calcularNutrientes(a, g) }];
     });
     if (!linhas.length) return void toast("Escolha pelo menos um alimento com quantidade válida.");
