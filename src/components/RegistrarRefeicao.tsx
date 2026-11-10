@@ -39,7 +39,7 @@ async function buscar(termo: string): Promise<AlimentoTaco[]> {
   if (q === "leite" && !marca) {
     const { data: leites, error: erroLeite } = await supabase.from("alimentos_usda")
       .select("fdc_id,descricao,marca,gtin_upc,kcal,proteina_g,lipideos_g,carboidrato_g")
-      .eq("descricao", "WHOLE MILK").limit(8);
+      .eq("descricao", "WHOLE MILK").order("fdc_id").limit(8);
     if (erroLeite) throw erroLeite;
     return ordenarAlimentos(termo, [...locais, ...(leites ?? []).map(a => ({ ...a, id: a.fdc_id, fonte: "usda" as const }))]);
   }
@@ -48,7 +48,7 @@ async function buscar(termo: string): Promise<AlimentoTaco[]> {
   if (erroProdutos) throw erroProdutos;
   let usda = (produtos ?? []) as AlimentoTaco[];
   if (q === "leite" && !marca) usda = usda.filter(a => /^(?:organic )?whole milk(?:,|$)/i.test(a.descricao));
-  if (marca) usda = usda.filter(a => normalizar(a.marca ?? "").includes(marca));
+  if (marca) usda = usda.filter(a => normalizar(a.marca ?? "").includes(marca) && q.split(" ").filter(w => w.length > 2).every(w => normalizar(a.descricao).includes(w)));
   return ordenarAlimentos(termo, [...locais, ...usda]);
 }
 
@@ -99,7 +99,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
         const { marca } = consultaAlimento(p.termo);
         const exata = opcoes.find(a => marca && normalizar(a.marca ?? "").includes(marca));
         const a = exata ?? opcoes.find(nutrientesDisponiveis);
-        const aviso = marca && !exata ? `Marca ${marca} não encontrada. Queijo/alimento genérico disponível; escolha para confirmar, ou envie o rótulo antes de registrar a marca.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : undefined;
+        const aviso = marca && !exata ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : p.termo === "leite" ? "Leite integral: referência de produto USDA, pois a TACO não informa estes valores. Confira com o rótulo do seu leite." : undefined;
         setItens(arr => arr.map((it, j) => j === i ? { ...it, opcoes, escolhido: marca && !exata ? null : a ? chave(a) : null, aviso } : it));
       }),
     );
@@ -248,7 +248,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
                       className="h-9 min-w-0 w-full rounded-md border border-input bg-background px-2 text-sm"
                     >
                       <option value="" disabled>Escolha um alimento</option>
-                      {it.opcoes.map((o) => <option key={chave(o)} value={chave(o)}>{o.descricao}{o.marca ? ` · ${o.marca}` : ""}</option>)}
+                      {it.opcoes.map((o) => <option key={chave(o)} value={chave(o)}>{o.descricao === "WHOLE MILK" ? "Leite integral (WHOLE MILK)" : o.descricao}{o.marca ? ` · ${o.marca}` : ""}</option>)}
                     </select>
                     <div className="flex items-center gap-1">
                       <Input aria-label="Quantidade em gramas" inputMode="decimal" value={it.gramas} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, gramas: e.target.value } : x)))} className="h-9" />
