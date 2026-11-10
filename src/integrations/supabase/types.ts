@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      alimentos_brasil: {
+        Row: {
+          busca: string
+          carboidrato_g: number | null
+          descricao: string
+          ean: number
+          kcal: number | null
+          lipideos_g: number | null
+          marca: string | null
+          proteina_g: number | null
+        }
+        Insert: {
+          busca: string
+          carboidrato_g?: number | null
+          descricao: string
+          ean: number
+          kcal?: number | null
+          lipideos_g?: number | null
+          marca?: string | null
+          proteina_g?: number | null
+        }
+        Update: {
+          busca?: string
+          carboidrato_g?: number | null
+          descricao?: string
+          ean?: number
+          kcal?: number | null
+          lipideos_g?: number | null
+          marca?: string | null
+          proteina_g?: number | null
+        }
+        Relationships: []
+      }
       alimentos_taco: {
         Row: {
           busca: string
@@ -327,6 +360,7 @@ export type Database = {
       registros: {
         Row: {
           alimento_id: number | null
+          br_ean: number | null
           carboidratos_g: number
           criado_em: string
           descricao: string
@@ -344,6 +378,7 @@ export type Database = {
         }
         Insert: {
           alimento_id?: number | null
+          br_ean?: number | null
           carboidratos_g?: number
           criado_em?: string
           descricao: string
@@ -361,6 +396,7 @@ export type Database = {
         }
         Update: {
           alimento_id?: number | null
+          br_ean?: number | null
           carboidratos_g?: number
           criado_em?: string
           descricao?: string
@@ -438,6 +474,25 @@ export type Database = {
           marca: string
           proteina_g: number
         }[]
+      }
+      buscar_brasil: {
+        Args: { termo: string }
+        Returns: {
+          busca: string
+          carboidrato_g: number | null
+          descricao: string
+          ean: number
+          kcal: number | null
+          lipideos_g: number | null
+          marca: string | null
+          proteina_g: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "alimentos_brasil"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       buscar_usda: {
         Args: { termo: string }

@@ -32,6 +32,11 @@ describe("identificação local", () => {
   it("não trata nutrientes ausentes como zero", () => {
     expect(nutrientesDisponiveis({ ...alimento(458, "Leite"), kcal: null })).toBe(false);
   });
+  it("reconhece Traquinas como marca mesmo sem a palavra marca, na grafia do rótulo", () => {
+    expect(consultaAlimento("bolacha traquinas")).toEqual({ alimento: "bolacha", marca: "trakinas" });
+    expect(consultaAlimento("traquinas")).toEqual({ alimento: "", marca: "trakinas" });
+    expect(consultaAlimento("biscoito marca traquinas")).toEqual({ alimento: "biscoito", marca: "trakinas" });
+  });
   it("estima açúcar separadamente em 5 g, nunca 100 g", () => {
     expect(porcaoEstimada("açúcar")).toBe(5);
   });

@@ -78,6 +78,13 @@
       "when": 1794347429225,
       "tag": "0010_consentimento_interpretacao_ia",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794349515602,
+      "tag": "0011_alimentos_brasil_trakinas",
+      "breakpoints": true
     }
   ]
 }

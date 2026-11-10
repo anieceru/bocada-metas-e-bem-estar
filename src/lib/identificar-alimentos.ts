@@ -1,9 +1,17 @@
 import { normalizar, type AlimentoTaco } from "./diario";
 
+// Marcas conhecidas reconhecidas mesmo sem a palavra "marca"; a forma canônica é a do rótulo.
+const MARCAS_CONHECIDAS: Record<string, string> = { traquinas: "Trakinas", trakinas: "Trakinas" };
+
 export function consultaAlimento(termo: string) {
   const t = normalizar(termo);
   const [alimento = "", marca] = t.split(/\s+(?:da\s+)?marca\s+/);
-  return { alimento: alimento.trim(), marca: marca?.trim() || null };
+  if (marca?.trim()) return { alimento: alimento.trim(), marca: normalizar(MARCAS_CONHECIDAS[marca.trim()] ?? marca.trim()) };
+  for (const forma of Object.keys(MARCAS_CONHECIDAS)) {
+    const re = new RegExp(`\\s*\\b${forma}\\b\\s*`);
+    if (re.test(t)) return { alimento: t.replace(re, " ").replace(/\s+/g, " ").trim(), marca: normalizar(MARCAS_CONHECIDAS[forma] ?? forma) };
+  }
+  return { alimento: alimento.trim(), marca: null };
 }
 
 export function ordenarAlimentos(termo: string, alimentos: AlimentoTaco[]) {
