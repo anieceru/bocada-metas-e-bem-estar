@@ -12,6 +12,8 @@ export const Route = createFileRoute("/privacidade")({
       <p>Só guardamos dados de saúde com seu consentimento específico, registrado com data, hora e versão do texto (atual: {VERSAO_CONSENTIMENTO}). Você pode retirar a autorização em Configurações; os dados são apagados.</p>
       <h2>Para que usamos</h2>
       <p>Apenas para o funcionamento do app. Não vendemos dados nem os enviamos a ferramentas de análise de terceiros.</p>
+      <h2>Interpretação opcional por IA</h2>
+      <p>Com autorização individual separada, a descrição digitada ou ditada é enviada à OpenAI pelo AI Gateway para identificar alimentos, quantidades e refeições. Não enviamos peso, idade, metas, histórico nem identificação da conta ao modelo. Usamos um modelo com retenção zero; o Bocada não registra descrições em logs. A autorização é registrada com data, hora e versão, e pode ser retirada no controle “Interpretação por IA” junto ao registro. Sem autorização, a interpretação continua local. A IA pode errar; confira os itens e as quantidades antes de registrar. O ditado permanece a cargo do navegador, cujas condições também se aplicam.</p>
       <h2>Cookies</h2>
       <p>Usamos apenas armazenamento essencial (sessão e preferência de tema). Recursos não essenciais só são ativados se você aceitar no aviso de cookies.</p>
       <h2>Seus direitos</h2>

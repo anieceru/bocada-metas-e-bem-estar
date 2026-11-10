@@ -92,6 +92,32 @@ export type Database = {
         }
         Relationships: []
       }
+      consentimentos_ia: {
+        Row: {
+          autorizado_em: string
+          user_id: string
+          versao: string
+        }
+        Insert: {
+          autorizado_em?: string
+          user_id: string
+          versao: string
+        }
+        Update: {
+          autorizado_em?: string
+          user_id?: string
+          versao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consentimentos_ia_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dispositivos_push: {
         Row: {
           criado_em: string
