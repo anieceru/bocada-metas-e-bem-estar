@@ -33,7 +33,7 @@ const chave = (a: AlimentoTaco) => `${a.fonte ?? "taco"}:${a.id}`;
 
 async function buscar(termo: string): Promise<AlimentoTaco[]> {
   const { alimento, marca } = consultaAlimento(termo);
-  const q = normalizar(alimento).replace(/[.,]/g, " ").trim();
+  const q = normalizar(alimento || marca || "").replace(/[.,]/g, " ").trim();
   if (!q) return [];
   const { data, error } = await supabase.rpc("buscar_alimentos_catalogo", { q, fonte: "taco" });
   if (error) throw error;
@@ -48,11 +48,19 @@ async function buscar(termo: string): Promise<AlimentoTaco[]> {
     return ordenarAlimentos(termo, [...locais, ...(leites ?? []).map(a => ({ ...a, id: a.fdc_id, fonte: "usda" as const }))]);
   }
   const consulta = q === "leite" && !marca ? "whole milk" : marca ?? q;
-  const { data: produtos, error: erroProdutos } = await supabase.rpc("buscar_alimentos_catalogo", { q: consulta, fonte: "usda" });
+  const [{ data: produtos, error: erroProdutos }, { data: nacionais, error: erroNacionais }] = await Promise.all([
+    supabase.rpc("buscar_alimentos_catalogo", { q: consulta, fonte: "usda" }),
+    supabase.rpc("buscar_alimentos_catalogo", { q: consulta, fonte: "br" }),
+  ]);
   if (erroProdutos) throw erroProdutos;
-  let usda = (produtos ?? []) as AlimentoTaco[];
+  if (erroNacionais) throw erroNacionais;
+  let usda = [...(produtos ?? []), ...(nacionais ?? [])] as AlimentoTaco[];
   if (q === "leite" && !marca) usda = usda.filter(a => /^(?:organic )?whole milk(?:,|$)/i.test(a.descricao));
-  if (marca) usda = usda.filter(a => normalizar(a.marca ?? "").includes(marca) && q.split(" ").filter(w => w.length > 2).every(w => normalizar(a.descricao).includes(w)));
+  if (marca) {
+    // "bolacha" e "biscoito" nomeiam o mesmo produto no rótulo e na fala.
+    const palavras = q.split(" ").filter(w => w.length > 2 && w !== marca).map(w => (w === "bolacha" ? "biscoito" : w));
+    usda = usda.filter(a => normalizar(a.marca ?? "").includes(marca) && palavras.every(w => normalizar(a.descricao).includes(w)));
+  }
   return ordenarAlimentos(termo, [...locais, ...usda]);
 }
 

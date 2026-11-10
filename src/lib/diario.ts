@@ -5,15 +5,15 @@ export type AlimentoTaco = {
   proteina_g: number | null;
   lipideos_g: number | null;
   carboidrato_g: number | null;
-  fonte?: "taco" | "usda";
+  fonte?: "taco" | "usda" | "br";
   marca?: string | null;
   gtin_upc?: string | null;
 };
 
 export function referenciaAlimento(a: AlimentoTaco) {
-  return a.fonte === "usda"
-    ? { alimento_id: null, usda_fdc_id: a.id }
-    : { alimento_id: a.id, usda_fdc_id: null };
+  if (a.fonte === "usda") return { alimento_id: null, usda_fdc_id: a.id, br_ean: null };
+  if (a.fonte === "br") return { alimento_id: null, usda_fdc_id: null, br_ean: a.id };
+  return { alimento_id: a.id, usda_fdc_id: null, br_ean: null };
 }
 
 export function normalizar(s: string): string {
@@ -34,9 +34,11 @@ const PALAVRAS_VAZIAS = new Set([
 const NUMEROS: Record<string, number> = { cem: 100, duzentos: 200, duzentas: 200, trezentos: 300, trezentas: 300, quinhentos: 500, quinhentas: 500, cinquenta: 50, mil: 1000 };
 
 const REFEICOES_FALA: Record<string, string> = {
-  "cafe da manha": "Café da manhã", almoco: "Almoço", lanche: "Lanches", lanches: "Lanches", jantar: "Jantar",
+  "cafe da manha": "Café da manhã", almoco: "Almoço", lanche: "Lanches", lanches: "Lanches",
+  "lanche da tarde": "Lanches", "lanches da tarde": "Lanches", "lanche da manha": "Lanches", "lanches da manha": "Lanches",
+  jantar: "Jantar",
 };
-const MARCADOR_REFEICAO = /\b(?:no|na|para o|para a)\s+(cafe da manha|almoco|lanches?|jantar)\b/g;
+const MARCADOR_REFEICAO = /\b(?:no|na|para o|para a)\s+(cafe da manha|almoco|lanches?(?:\s+da\s+(?:tarde|manha))?|jantar)\b/g;
 
 /** Refeições são contexto da fala, nunca termos de busca no catálogo. */
 export function interpretarFrase(texto: string, refeicaoInicial: string) {
