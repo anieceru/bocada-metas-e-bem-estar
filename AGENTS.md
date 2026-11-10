@@ -36,3 +36,5 @@ use the editor.
 - Keep USDA branded foods in a separate local catalog and reference its FDC ids separately from TACO ids in diary entries, so existing entries and source attribution remain intact. Never turn missing USDA nutrients into zero.
 - Use the shared private-page metadata helper for authenticated content pages to keep page-specific social descriptions static and free of user health data.
 - Keep macro energy conversions and save validation in src/lib/macros.ts; persist whole grams rounded down when converting percentages so rounding cannot exceed the calorie budget.
+- Store meal labels on each diary entry and user-editable meal lists on profiles; removing a category must not remove existing food records.
+- Monthly evolution uses recorded nutrition totals only; missing days and unavailable micronutrients must not be reported as zero intake or inferred body-weight change.
