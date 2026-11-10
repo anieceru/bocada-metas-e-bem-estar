@@ -1,5 +1,7 @@
 # Bocada roadmap
 
+- [x] Corrigir interpretação de leite, café com açúcar, cuscuz e marcas; reduzir espera e verificar registro
+
 - [x] Reordenar macros: proteínas, carbos e gorduras
 - [x] Explicar água e calorias com destaque, déficit/superávit e fontes
 - [x] Gráfico da evolução nutricional
