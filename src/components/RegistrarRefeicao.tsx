@@ -24,7 +24,7 @@ function criarReconhecimento(): SR | null {
   return C ? new C() : null;
 }
 
-type Item = { termo: string; gramas: string; opcoes: AlimentoTaco[]; escolhido: string | null; aviso?: string };
+type Item = { termo: string; gramas: string; opcoes: AlimentoTaco[]; escolhido: string | null; aviso?: string | undefined };
 const chave = (a: AlimentoTaco) => `${a.fonte ?? "taco"}:${a.id}`;
 
 async function buscar(termo: string): Promise<AlimentoTaco[]> {
@@ -36,6 +36,13 @@ async function buscar(termo: string): Promise<AlimentoTaco[]> {
   const locais = (data ?? []) as AlimentoTaco[];
   // Alimentos comuns não esperam a pesquisa no catálogo grande de produtos.
   if (!marca && locais.some(nutrientesDisponiveis) && q !== "leite") return ordenarAlimentos(termo, locais);
+  if (q === "leite" && !marca) {
+    const { data: leites, error: erroLeite } = await supabase.from("alimentos_usda")
+      .select("fdc_id,descricao,marca,gtin_upc,kcal,proteina_g,lipideos_g,carboidrato_g")
+      .eq("descricao", "WHOLE MILK").limit(8);
+    if (erroLeite) throw erroLeite;
+    return ordenarAlimentos(termo, [...locais, ...(leites ?? []).map(a => ({ ...a, id: a.fdc_id, fonte: "usda" as const }))]);
+  }
   const consulta = q === "leite" && !marca ? "whole milk" : marca ?? q;
   const { data: produtos, error: erroProdutos } = await supabase.rpc("buscar_alimentos_catalogo", { q: consulta, fonte: "usda" });
   if (erroProdutos) throw erroProdutos;
