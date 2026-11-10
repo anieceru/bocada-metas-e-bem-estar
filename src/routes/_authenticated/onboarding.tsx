@@ -160,7 +160,7 @@ function Onboarding() {
           <div className="space-y-1.5"><Label htmlFor="altura">Altura (cm)</Label><Input id="altura" inputMode="numeric" value={altura} onChange={(e) => setAltura(e.target.value)} /></div>
         </div>
         <p className="mt-6 text-sm font-medium">Sexo (opcional)</p>
-        <p className="text-xs text-muted-foreground">Serve só para sugerir metas no futuro.</p>
+        <p className="text-xs text-muted-foreground">Usado só na estimativa de calorias, não para definir identidade de gênero ou aparência. “Outro” ou não informar usa um coeficiente médio, que pode ser menos preciso.</p>
         <div className="mt-2 grid grid-cols-3 gap-2">
           {[["feminino", "Feminino"], ["masculino", "Masculino"], ["outro", "Outro"]].map(([v, l]) => (
             <Opcao key={v} ativo={sexo === v} onClick={() => setSexo(sexo === v ? null : (v as string))}>{l}</Opcao>
@@ -201,7 +201,7 @@ function Onboarding() {
   return (
     <div className={cartao}>
       <h1 className="text-2xl font-bold">Metas diárias</h1>
-      <p className="mt-1 mb-6 text-sm text-muted-foreground">Digite as que quiser. Tudo pode ser preenchido depois.</p>
+      <p className="mt-1 mb-6 text-sm text-muted-foreground">Tudo pode ser preenchido depois.</p>
       <MetasForm
         inicial={{}}
         calculo={{ idade: num(idade), peso_kg: num(peso), altura_cm: num(altura), sexo, atividade, objetivo }}

@@ -35,3 +35,4 @@ use the editor.
 - Account deletion runs in a server function using the admin client after `requireSupabaseAuth`; user id comes only from the verified session.
 - Keep USDA branded foods in a separate local catalog and reference its FDC ids separately from TACO ids in diary entries, so existing entries and source attribution remain intact. Never turn missing USDA nutrients into zero.
 - Use the shared private-page metadata helper for authenticated content pages to keep page-specific social descriptions static and free of user health data.
+- Keep macro energy conversions and save validation in src/lib/macros.ts; persist whole grams rounded down when converting percentages so rounding cannot exceed the calorie budget.
