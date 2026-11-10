@@ -90,10 +90,22 @@ export function dividirItens(texto: string): string[] {
   return partes.filter((s, i) => !["cafe", "cha"].includes(s) || partes.indexOf(s) === i);
 }
 
-/** Extrai gramas (g ou ml, tratados 1:1) e os termos de busca de um item. */
-export function interpretarItem(item: string): { termo: string; gramas: number | null } {
+/** Extrai gramas (g ou ml, tratados 1:1; medidas caseiras convertidas) e os termos de busca de um item. */
+export function interpretarItem(item: string, medidas?: Medidas): { termo: string; gramas: number | null; medidaOriginal?: string } {
   let gramas: number | null = null;
+  let medidaOriginal: string | undefined;
   let t = ` ${normalizar(item)} `;
+  const medida = t.match(/\s(\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|meio|meia)?\s*(copos?|xicaras?|colheres?\s+de\s+(?:sopa|cha|sobremesa))\s/);
+  if (medida) {
+    const unidade = medida[2]!.replace(/\s+/g, " ");
+    const g = MEDIDA_G(unidade, medidas);
+    if (g != null) {
+      const n = medida[1] ? NUM_MEDIDA[medida[1]] ?? Number(medida[1].replace(",", ".")) : 1;
+      gramas = Math.round(n * g * 10) / 10;
+      medidaOriginal = `${medida[1] ?? "1"} ${unidade}`;
+      t = t.replace(medida[0], " ");
+    }
+  }
   const m = t.match(/\s(\d+(?:[.,]\d+)?|cem|duzent[oa]s|trezent[oa]s|quinhent[oa]s|cinquenta|mil)\s*(g|gr|gramas?|ml|mililitros?)\s/);
   if (m) {
     const valor = m[1];
