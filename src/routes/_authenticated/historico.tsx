@@ -18,7 +18,7 @@ function consultaMes(mes: string) {
 }
 export const Route = createFileRoute("/_authenticated/historico")({
   head: () => privatePageHead("Evolução mensal", "Veja seu calendário e a evolução dos registros nutricionais no Bocada."),
-  validateSearch: (s: Record<string, unknown>): { mes?: string } => ({ mes: typeof s.mes === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(s.mes) ? s.mes : undefined }),
+  validateSearch: (s: Record<string, unknown>): { mes?: string } => typeof s['mes'] === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(s['mes']) ? { mes: s['mes'] } : {},
   loaderDeps: ({ search }) => ({ mes: search.mes ?? hojeISO().slice(0, 7) }),
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(consultaMes(deps.mes)),
   component: Historico,

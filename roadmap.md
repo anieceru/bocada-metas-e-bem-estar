@@ -11,9 +11,9 @@
 - [x] Preencher e-mail de contato de privacidade
 - [x] Integrar busca local USDA com atribuição e importar seleção inicial de 30 produtos
 - [x] Importar catálogo USDA completo (cerca de 450 mil produtos)
-- [ ] Verificar registro USDA com sessão real
-- [ ] Adicionar autenticação Microsoft/Outlook
-- [ ] Busca unificada e digitação visível, atribuição recolhida
-- [ ] Resumo com macros e nutrientes disponíveis
-- [ ] Refeições personalizáveis e registro por refeição
-- [ ] Semana, dias anteriores e mês com evolução das métricas registradas
+- [x] Verificar registro USDA com sessão real
+- [x] Adicionar autenticação Microsoft/Outlook (provedor habilitado; fluxo externo não exercitado)
+- [x] Busca unificada e digitação visível, atribuição recolhida
+- [x] Resumo com macros e nutrientes disponíveis (vitaminas/minerais indisponíveis na importação)
+- [x] Refeições personalizáveis e registro por refeição
+- [x] Semana, dias anteriores e mês com evolução das métricas registradas

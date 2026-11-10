@@ -18,7 +18,7 @@ import { privatePageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/hoje")({
   head: () => privatePageHead("Hoje", "Registre suas refeições e acompanhe seu resumo diário no Bocada."),
-  validateSearch: (search: Record<string, unknown>): { dia?: string } => ({ dia: dataValida(search.dia) ? search.dia : undefined }),
+  validateSearch: (search: Record<string, unknown>): { dia?: string } => dataValida(search['dia']) ? { dia: search['dia'] } : {},
   loader: ({ context }) => context.queryClient.ensureQueryData(perfilQuery),
   component: Hoje,
 });
