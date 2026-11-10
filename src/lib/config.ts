@@ -27,9 +27,9 @@ export function metasForaDoUsual(
 }
 
 // Versão do texto de consentimento de dados de saúde. Mude ao alterar o texto.
-export const VERSAO_CONSENTIMENTO = "2026-11-v2-rascunho";
+export const VERSAO_CONSENTIMENTO = "2026-11-v3-rascunho";
 export const TEXTO_CONSENTIMENTO =
-  "Autorizo o Bocada a tratar meus dados de saúde (idade, peso, altura, sexo, objetivo, metas diárias e refeições registradas) apenas para o funcionamento do app, conforme a Política de Privacidade. Posso retirar esta autorização a qualquer momento em Configurações.";
+  "Autorizo o Bocada a tratar meus dados de saúde (idade, peso, altura, sexo, nível de atividade, objetivo, metas diárias e refeições registradas) apenas para o funcionamento do app, conforme a Política de Privacidade. Posso retirar esta autorização a qualquer momento em Configurações.";
 
 // ===== Limites personalizados (cada pessoa ajusta os de macros e água) =====
 export type Limites = Record<ChaveMeta, { min: number; max: number }>;
@@ -66,8 +66,4 @@ export function validarSenha(s: string): string | null {
   return null;
 }
 
-export const OBJETIVOS = [
-  { v: "emagrecer", l: "Emagrecer" },
-  { v: "manter", l: "Manter o peso" },
-  { v: "ganhar", l: "Ganhar peso" },
-] as const;
+export { OBJETIVOS } from "./calculo-metas";
