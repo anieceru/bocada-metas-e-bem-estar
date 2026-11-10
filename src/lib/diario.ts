@@ -38,13 +38,26 @@ const REFEICOES_FALA: Record<string, string> = {
   "lanche da tarde": "Lanches", "lanches da tarde": "Lanches", "lanche da manha": "Lanches", "lanches da manha": "Lanches",
   jantar: "Jantar",
 };
-const MARCADOR_REFEICAO = /\b(?:no|na|para o|para a)\s+(cafe da manha|almoco|lanches?(?:\s+da\s+(?:tarde|manha))?|jantar)\b/g;
+// A refeição pode vir com preposição ("no almoço"), no início da fala ("café da manhã: leite e pão") ou após pontuação.
+const MARCADOR_REFEICAO = /(?:^|[.,;]\s*|\b(?:no|na|para o|para a)\s+)(cafe da manha|almoco|lanches?(?:\s+da\s+(?:tarde|manha))?|jantar)\b/g;
+
+/** Medidas caseiras → gramas/ml. "copo" usa o tamanho do copo da pessoa (padrão 200 ml). */
+export type Medidas = { copoMl?: number | undefined };
+const NUM_MEDIDA: Record<string, number> = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, meio: 0.5, meia: 0.5 };
+const MEDIDA_G = (medida: string, medidas?: Medidas): number | null => {
+  if (/^copos?$/.test(medida)) return medidas?.copoMl ?? 200;
+  if (/^xicaras?$/.test(medida)) return 200;
+  if (/^colheres? de sopa$/.test(medida)) return 15;
+  if (/^colheres? de cha$/.test(medida)) return 5;
+  if (/^colheres? de sobremesa$/.test(medida)) return 10;
+  return null;
+};
 
 /** Refeições são contexto da fala, nunca termos de busca no catálogo. */
-export function interpretarFrase(texto: string, refeicaoInicial: string) {
+export function interpretarFrase(texto: string, refeicaoInicial: string, medidas?: Medidas) {
   const frase = normalizar(texto);
   const marcadores = [...frase.matchAll(MARCADOR_REFEICAO)];
-  const resultado: { termo: string; gramas: number | null; refeicao: string }[] = [];
+  const resultado: { termo: string; gramas: number | null; refeicao: string; medidaOriginal?: string }[] = [];
   let inicio = 0;
   let refeicao = refeicaoInicial;
   for (const marcador of marcadores) {
@@ -54,11 +67,11 @@ export function interpretarFrase(texto: string, refeicaoInicial: string) {
     const fim = (marcador.index ?? 0) + marcador[0].length;
     // “Comi arroz no almoço” também define a refeição do alimento anterior.
     const destino = !frase.slice(fim).trim() ? nome : refeicao;
-    resultado.push(...dividirItens(antes).map(interpretarItem).filter(p => p.termo).map(p => ({ ...p, refeicao: destino })));
+    resultado.push(...dividirItens(antes).map(item => interpretarItem(item, medidas)).filter(p => p.termo).map(p => ({ ...p, refeicao: destino })));
     refeicao = nome;
     inicio = fim;
   }
-  resultado.push(...dividirItens(frase.slice(inicio)).map(interpretarItem).filter(p => p.termo).map(p => ({ ...p, refeicao })));
+  resultado.push(...dividirItens(frase.slice(inicio)).map(item => interpretarItem(item, medidas)).filter(p => p.termo).map(p => ({ ...p, refeicao })));
   return resultado;
 }
 
@@ -77,10 +90,22 @@ export function dividirItens(texto: string): string[] {
   return partes.filter((s, i) => !["cafe", "cha"].includes(s) || partes.indexOf(s) === i);
 }
 
-/** Extrai gramas (g ou ml, tratados 1:1) e os termos de busca de um item. */
-export function interpretarItem(item: string): { termo: string; gramas: number | null } {
+/** Extrai gramas (g ou ml, tratados 1:1; medidas caseiras convertidas) e os termos de busca de um item. */
+export function interpretarItem(item: string, medidas?: Medidas): { termo: string; gramas: number | null; medidaOriginal?: string } {
   let gramas: number | null = null;
+  let medidaOriginal: string | undefined;
   let t = ` ${normalizar(item)} `;
+  const medida = t.match(/\s(\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|meio|meia)?\s*(copos?|xicaras?|colheres?\s+de\s+(?:sopa|cha|sobremesa))\s/);
+  if (medida) {
+    const unidade = medida[2]!.replace(/\s+/g, " ");
+    const g = MEDIDA_G(unidade, medidas);
+    if (g != null) {
+      const n = medida[1] ? NUM_MEDIDA[medida[1]] ?? Number(medida[1].replace(",", ".")) : 1;
+      gramas = Math.round(n * g * 10) / 10;
+      medidaOriginal = `${medida[1] ?? "1"} ${unidade}`;
+      t = t.replace(medida[0], " ");
+    }
+  }
   const m = t.match(/\s(\d+(?:[.,]\d+)?|cem|duzent[oa]s|trezent[oa]s|quinhent[oa]s|cinquenta|mil)\s*(g|gr|gramas?|ml|mililitros?)\s/);
   if (m) {
     const valor = m[1];
@@ -92,7 +117,7 @@ export function interpretarItem(item: string): { termo: string; gramas: number |
     .split(" ")
     .filter((w) => w && !PALAVRAS_VAZIAS.has(w) && !/^\d/.test(w))
     .join(" ");
-  return { termo, gramas };
+  return medidaOriginal ? { termo, gramas, medidaOriginal } : { termo, gramas };
 }
 
 export function calcularNutrientes(a: AlimentoTaco, gramas: number) {
