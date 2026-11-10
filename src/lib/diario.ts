@@ -42,7 +42,7 @@ const REFEICOES_FALA: Record<string, string> = {
 const MARCADOR_REFEICAO = /(?:^|[.,;]\s*|\b(?:no|na|para o|para a)\s+)(cafe da manha|almoco|lanches?(?:\s+da\s+(?:tarde|manha))?|jantar)\b/g;
 
 /** Medidas caseiras → gramas/ml. "copo" usa o tamanho do copo da pessoa (padrão 200 ml). */
-export type Medidas = { copoMl?: number };
+export type Medidas = { copoMl?: number | undefined };
 const NUM_MEDIDA: Record<string, number> = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, meio: 0.5, meia: 0.5 };
 const MEDIDA_G = (medida: string, medidas?: Medidas): number | null => {
   if (/^copos?$/.test(medida)) return medidas?.copoMl ?? 200;
