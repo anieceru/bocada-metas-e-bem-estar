@@ -33,7 +33,7 @@ export function horaLocal(agora: Date, fuso: string) {
   return { hora: Number(partes["hour"]), dia: `${partes["year"]}-${partes["month"]}-${partes["day"]}` };
 }
 
-export type Totais = Partial<Record<"kcal" | "carboidratos_g" | "proteinas_g" | "gorduras_g", number>>;
+export type Totais = Partial<Record<"kcal" | "carboidratos_g" | "proteinas_g" | "gorduras_g", number | null>>;
 /** Metas do dia ultrapassadas pelo total registrado. */
 export function metasUltrapassadas(totais: Totais, metas: Totais) {
   return (["kcal", "proteinas_g", "carboidratos_g", "gorduras_g"] as const).filter((k) => { const meta = metas[k]; return meta != null && meta > 0 && (totais[k] ?? 0) > meta; });
