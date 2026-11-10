@@ -54,10 +54,10 @@ const MEDIDA_G = (medida: string, medidas?: Medidas): number | null => {
 };
 
 /** Refeições são contexto da fala, nunca termos de busca no catálogo. */
-export function interpretarFrase(texto: string, refeicaoInicial: string) {
+export function interpretarFrase(texto: string, refeicaoInicial: string, medidas?: Medidas) {
   const frase = normalizar(texto);
   const marcadores = [...frase.matchAll(MARCADOR_REFEICAO)];
-  const resultado: { termo: string; gramas: number | null; refeicao: string }[] = [];
+  const resultado: { termo: string; gramas: number | null; refeicao: string; medidaOriginal?: string }[] = [];
   let inicio = 0;
   let refeicao = refeicaoInicial;
   for (const marcador of marcadores) {
@@ -67,11 +67,11 @@ export function interpretarFrase(texto: string, refeicaoInicial: string) {
     const fim = (marcador.index ?? 0) + marcador[0].length;
     // “Comi arroz no almoço” também define a refeição do alimento anterior.
     const destino = !frase.slice(fim).trim() ? nome : refeicao;
-    resultado.push(...dividirItens(antes).map(interpretarItem).filter(p => p.termo).map(p => ({ ...p, refeicao: destino })));
+    resultado.push(...dividirItens(antes).map(item => interpretarItem(item, medidas)).filter(p => p.termo).map(p => ({ ...p, refeicao: destino })));
     refeicao = nome;
     inicio = fim;
   }
-  resultado.push(...dividirItens(frase.slice(inicio)).map(interpretarItem).filter(p => p.termo).map(p => ({ ...p, refeicao })));
+  resultado.push(...dividirItens(frase.slice(inicio)).map(item => interpretarItem(item, medidas)).filter(p => p.termo).map(p => ({ ...p, refeicao })));
   return resultado;
 }
 
