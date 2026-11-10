@@ -45,15 +45,16 @@ export function ajusteSexo(sexo: string | null) {
 
 export function calcularMetas(d: DadosCalculo) {
   if (faltandoParaCalcular(d).length) return null;
-  const ativ = ATIVIDADES.find((a) => a.v === d.atividade)!;
-  const obj = OBJETIVOS.find((o) => o.v === d.objetivo)!;
-  const basal = 10 * d.peso_kg! + 6.25 * d.altura_cm! - 5 * d.idade! + ajusteSexo(d.sexo);
+  const ativ = ATIVIDADES.find((a) => a.v === d.atividade);
+  const obj = OBJETIVOS.find((o) => o.v === d.objetivo);
+  if (!ativ || !obj || d.peso_kg == null || d.altura_cm == null || d.idade == null) return null;
+  const basal = 10 * d.peso_kg + 6.25 * d.altura_cm - 5 * d.idade + ajusteSexo(d.sexo);
   const manutencao = basal * ativ.fator;
   const kcal = Math.round(manutencao + obj.ajuste);
-  const proteinas_g = Math.round(obj.proteinaPorKg * d.peso_kg!);
-  const gorduras_g = Math.round((kcal * FRACAO_GORDURA) / 9);
-  const carboidratos_g = Math.max(0, Math.round((kcal - proteinas_g * 4 - gorduras_g * 9) / 4));
-  const agua_ml = Math.round((AGUA_ML_POR_KG * d.peso_kg!) / 50) * 50;
+  const proteinas_g = Math.min(Math.floor(kcal / 4), Math.round(obj.proteinaPorKg * d.peso_kg));
+  const gorduras_g = Math.min(Math.floor((kcal - proteinas_g * 4) / 9), Math.floor((kcal * FRACAO_GORDURA) / 9));
+  const carboidratos_g = Math.max(0, Math.floor((kcal - proteinas_g * 4 - gorduras_g * 9) / 4));
+  const agua_ml = Math.round((AGUA_ML_POR_KG * d.peso_kg) / 50) * 50;
   return {
     basal: Math.round(basal), manutencao: Math.round(manutencao), ativ, obj,
     metas: { kcal, carboidratos_g, proteinas_g, gorduras_g, agua_ml },

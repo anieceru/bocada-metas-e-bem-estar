@@ -136,6 +136,7 @@ export type Database = {
       profiles: {
         Row: {
           altura_cm: number | null
+          atividade: string | null
           atualizado_em: string
           consentimento_saude_em: string | null
           consentimento_saude_versao: string | null
@@ -153,6 +154,7 @@ export type Database = {
         }
         Insert: {
           altura_cm?: number | null
+          atividade?: string | null
           atualizado_em?: string
           consentimento_saude_em?: string | null
           consentimento_saude_versao?: string | null
@@ -170,6 +172,7 @@ export type Database = {
         }
         Update: {
           altura_cm?: number | null
+          atividade?: string | null
           atualizado_em?: string
           consentimento_saude_em?: string | null
           consentimento_saude_versao?: string | null

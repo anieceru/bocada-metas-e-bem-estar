@@ -81,6 +81,10 @@ function Config() {
     if (temConsent) {
       const i = num(idade);
       if (i == null || i < 18 || i > 120) return void toast.error("Informe uma idade válida (18 ou mais).");
+      const pesoN = num(peso);
+      const alturaN = num(altura);
+      if (pesoN != null && (!Number.isFinite(pesoN) || pesoN <= 20 || pesoN >= 400)) return void toast.error("Informe o peso em kg, maior que 20 e menor que 400, ou deixe em branco.");
+      if (alturaN != null && (!Number.isFinite(alturaN) || alturaN <= 80 || alturaN >= 260)) return void toast.error("Informe a altura em centímetros, maior que 80 e menor que 260, ou deixe em branco.");
       Object.assign(upd, { idade: i, peso_kg: num(peso), altura_cm: num(altura), sexo, objetivo, atividade });
     }
     const { error } = await supabase.from("profiles").update(upd as never).eq("id", uid);
@@ -170,6 +174,7 @@ function Config() {
               <div className="space-y-1.5">
                 <Label>Sexo (opcional)</Label>
                 <Seletor valor={sexo} onChange={(v) => setSexo(sexo === v ? null : v)} opcoes={[{ v: "feminino", l: "Feminino" }, { v: "masculino", l: "Masculino" }, { v: "outro", l: "Outro" }]} />
+                <p className="text-xs text-muted-foreground">Opcional e usado apenas na estimativa de calorias, não para definir identidade de gênero ou aparência. “Outro” ou não informar usa um coeficiente médio, que pode ser menos preciso.</p>
               </div>
               <div className="space-y-1.5"><Label>Objetivo</Label><Seletor valor={objetivo} onChange={setObjetivo} opcoes={OBJETIVOS} /></div>
               <div className="space-y-1.5">

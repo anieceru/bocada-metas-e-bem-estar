@@ -1,5 +1,8 @@
 # Bocada roadmap
 
+- [x] Corrigir salvamento de perfil e esclarecer sexo opcional
+- [x] Metas com macros em porcentagem ou gramas e bloqueio acima de 100%
+
 - [x] Etapa 1: base (conta, onboarding, configurações, tela inicial, páginas legais, cookies)
 - [x] Cadastro: explicar separadamente bloqueio <18 e armazenamento opcional de idade/dados de saúde
 - [x] Tela para cada pessoa ajustar limites de alerta de macros e água
