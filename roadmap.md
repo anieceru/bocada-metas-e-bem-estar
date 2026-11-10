@@ -1,6 +1,6 @@
 # Bocada roadmap
 
-- [ ] Interpretar refeições mencionadas na frase e ignorar “né” sem buscar alimentos incorretos
+- [x] Interpretar refeições mencionadas na frase e ignorar “né” sem buscar alimentos incorretos
 
 - [x] Mostrar leite integral em português e usar queijo Minas genérico quando a marca estiver ausente
 
