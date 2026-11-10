@@ -10,6 +10,7 @@ import {
   calcularNutrientes, dividirItens, hojeISO, interpretarItem, normalizar, referenciaAlimento, type AlimentoTaco,
 } from "@/lib/diario";
 import { verificarAlertaMetas } from "@/lib/notificacoes.functions";
+import { consultaAlimento, nutrientesDisponiveis, ordenarAlimentos, porcaoEstimada } from "@/lib/identificar-alimentos";
 
 type SR = {
   lang: string; interimResults: boolean; continuous: boolean;
@@ -23,18 +24,25 @@ function criarReconhecimento(): SR | null {
   return C ? new C() : null;
 }
 
-type Item = { termo: string; gramas: string; opcoes: AlimentoTaco[]; escolhido: string | null };
+type Item = { termo: string; gramas: string; opcoes: AlimentoTaco[]; escolhido: string | null; aviso?: string };
 const chave = (a: AlimentoTaco) => `${a.fonte ?? "taco"}:${a.id}`;
 
 async function buscar(termo: string): Promise<AlimentoTaco[]> {
-  const q = normalizar(termo).replace(/[.,]/g, " ");
+  const { alimento, marca } = consultaAlimento(termo);
+  const q = normalizar(alimento).replace(/[.,]/g, " ").trim();
   if (!q) return [];
-  const resultados = await Promise.all((["taco", "usda"] as const).map(async (fonte) => {
-    const { data, error } = await supabase.rpc("buscar_alimentos_catalogo", { q, fonte });
-    if (error) throw error;
-    return (data ?? []) as AlimentoTaco[];
-  }));
-  return resultados.flat();
+  const { data, error } = await supabase.rpc("buscar_alimentos_catalogo", { q, fonte: "taco" });
+  if (error) throw error;
+  const locais = (data ?? []) as AlimentoTaco[];
+  // Alimentos comuns não esperam a pesquisa no catálogo grande de produtos.
+  if (!marca && locais.some(nutrientesDisponiveis) && q !== "leite") return ordenarAlimentos(termo, locais);
+  const consulta = q === "leite" && !marca ? "whole milk" : marca ?? q;
+  const { data: produtos, error: erroProdutos } = await supabase.rpc("buscar_alimentos_catalogo", { q: consulta, fonte: "usda" });
+  if (erroProdutos) throw erroProdutos;
+  let usda = (produtos ?? []) as AlimentoTaco[];
+  if (q === "leite" && !marca) usda = usda.filter(a => /^(?:organic )?whole milk(?:,|$)/i.test(a.descricao));
+  if (marca) usda = usda.filter(a => normalizar(a.marca ?? "").includes(marca));
+  return ordenarAlimentos(termo, [...locais, ...usda]);
 }
 
 export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café da manhã", "Almoço", "Jantar", "Lanches"], refeicaoInicial, onSaved }: { userId: string; dia?: string; refeicoes?: string[]; refeicaoInicial?: string; onSaved?: () => void }) {
@@ -51,6 +59,16 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
   const [buscando, setBuscando] = useState(false);
   const rec = useRef<SR | null>(null);
   const finalRef = useRef("");
+  const buscaAtual = useRef(0);
+  const cache = useRef(new Map<string, Promise<AlimentoTaco[]>>());
+  async function buscarUmaVez(termo: string) {
+    const q = normalizar(termo);
+    const anterior = cache.current.get(q);
+    if (anterior) return anterior;
+    const promessa = buscar(q).catch(e => { cache.current.delete(q); throw e; });
+    cache.current.set(q, promessa);
+    return promessa;
+  }
 
   useEffect(() => {
     const ok = !!criarReconhecimento();
@@ -64,18 +82,24 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
     const partes = dividirItens(frase).map(interpretarItem).filter((p) => p.termo);
     if (!partes.length) return void toast("Não entendi os alimentos. Tente de novo ou digite.");
     setBuscando(true);
+    const versao = ++buscaAtual.current;
+    setItens(partes.map(p => ({ termo: p.termo, gramas: String(p.gramas ?? porcaoEstimada(p.termo)), opcoes: [], escolhido: null })));
     try {
-    const novos = await Promise.all(
-      partes.map(async (p) => {
-        const opcoes = await buscar(p.termo);
-        return { termo: p.termo, gramas: String(p.gramas ?? 100), opcoes, escolhido: opcoes[0] ? chave(opcoes[0]) : null };
+    await Promise.all(
+      partes.map(async (p, i) => {
+        const opcoes = await buscarUmaVez(p.termo);
+        if (versao !== buscaAtual.current) return;
+        const { marca } = consultaAlimento(p.termo);
+        const exata = opcoes.find(a => marca && normalizar(a.marca ?? "").includes(marca));
+        const a = exata ?? opcoes.find(nutrientesDisponiveis);
+        const aviso = marca && !exata ? `Marca ${marca} não encontrada. Queijo/alimento genérico disponível; escolha para confirmar, ou envie o rótulo antes de registrar a marca.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : undefined;
+        setItens(arr => arr.map((it, j) => j === i ? { ...it, opcoes, escolhido: marca && !exata ? null : a ? chave(a) : null, aviso } : it));
       }),
     );
-    setItens(novos);
     } catch {
       toast.error("Não foi possível buscar alimentos. Tente de novo.");
     } finally {
-      setBuscando(false);
+      if (versao === buscaAtual.current) setBuscando(false);
     }
   }
 
@@ -118,12 +142,15 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
 
   async function trocarBusca(i: number, termo: string) {
     let opcoes: AlimentoTaco[];
-    try { opcoes = await buscar(termo); }
+    try { opcoes = await buscarUmaVez(termo); }
     catch { return void toast.error("Não foi possível buscar alimentos. Tente de novo."); }
-    setItens((arr) => arr.map((it, j) => (j === i ? { ...it, termo, opcoes, escolhido: opcoes[0] ? chave(opcoes[0]) : null } : it)));
+    const { marca } = consultaAlimento(termo);
+    const a = opcoes.find(o => nutrientesDisponiveis(o) && (!marca || normalizar(o.marca ?? "").includes(marca)));
+    setItens((arr) => arr.map((it, j) => (j === i ? { ...it, termo, opcoes, escolhido: a ? chave(a) : null, aviso: marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : undefined } : it)));
   }
 
   async function salvar() {
+    if (itens.some(it => !it.escolhido || !it.opcoes.some(a => chave(a) === it.escolhido && nutrientesDisponiveis(a)) || !(Number(it.gramas.replace(",", ".")) > 0 && Number(it.gramas.replace(",", ".")) <= 5000))) return void toast("Confira todos os alimentos e quantidades antes de registrar.");
     const linhas = itens.flatMap((it) => {
       const a = it.opcoes.find((o) => chave(o) === it.escolhido);
       const g = Number(it.gramas.replace(",", "."));
@@ -193,18 +220,18 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
           {itens.map((it, i) => {
             const a = it.opcoes.find((o) => chave(o) === it.escolhido);
             const g = Number(it.gramas.replace(",", "."));
-            const n = a && g > 0 ? calcularNutrientes(a, g) : null;
+            const n = a && nutrientesDisponiveis(a) && g > 0 ? calcularNutrientes(a, g) : null;
             return (
               <div key={i} className="rounded-xl border p-3">
                 <div className="flex items-center gap-2">
                   <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                  <Input aria-label="Buscar alimento" defaultValue={it.termo} onBlur={(e) => e.target.value !== it.termo && trocarBusca(i, e.target.value)} className="h-9" />
+                  <Input key={it.termo} aria-label="Buscar alimento" defaultValue={it.termo} onBlur={(e) => e.target.value !== it.termo && trocarBusca(i, e.target.value)} className="h-9" />
                   <Button type="button" variant="ghost" size="icon" aria-label="Remover item" onClick={() => setItens(itens.filter((_, j) => j !== i))} className="text-muted-foreground">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
                 {it.opcoes.length === 0 ? (
-                  <p className="mt-2 text-xs text-muted-foreground">Nada encontrado. Tente outra palavra, marca ou nome do rótulo.</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{buscando ? "Buscando…" : "Nada encontrado. Tente outra palavra, marca ou nome do rótulo."}</p>
                 ) : (
                   <div className="mt-2 grid grid-cols-[1fr_5.5rem] gap-2">
                     <select
@@ -213,6 +240,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
                       onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, escolhido: e.target.value } : x)))}
                       className="h-9 min-w-0 w-full rounded-md border border-input bg-background px-2 text-sm"
                     >
+                      <option value="" disabled>Escolha um alimento</option>
                       {it.opcoes.map((o) => <option key={chave(o)} value={chave(o)}>{o.descricao}{o.marca ? ` · ${o.marca}` : ""}</option>)}
                     </select>
                     <div className="flex items-center gap-1">
@@ -221,6 +249,8 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
                     </div>
                   </div>
                 )}
+                {it.aviso && <p className="mt-2 text-xs text-estado-estimativa">{it.aviso}</p>}
+                {a && !nutrientesDisponiveis(a) && <p className="mt-2 text-xs text-muted-foreground">Valores nutricionais indisponíveis. Escolha outra opção; não serão contados como zero.</p>}
                 {n && (
                   <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="rounded bg-estado-estimativa/15 px-1.5 py-0.5 font-medium text-estado-estimativa">Estimativa</span>
@@ -230,10 +260,10 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
               </div>
             );
           })}
-          <Button onClick={salvar} disabled={salvando} className="h-11 w-full rounded-xl">Registrar</Button>
+          <Button onClick={salvar} disabled={salvando || buscando || itens.some(it => !it.escolhido)} className="h-11 w-full rounded-xl">Registrar</Button>
         </div>
       )}
-      <details className="mt-4 text-xs text-muted-foreground"><summary className="cursor-pointer">Fonte dos valores</summary><p className="mt-2">Valores: TACO 4ª ed., NEPA/UNICAMP e USDA FoodData Central. Produtos americanos mantêm os nomes do rótulo; fórmulas podem variar por país. Sem quantidade indicada, confira a estimativa de 100 g.</p></details>
+      <details className="mt-4 text-xs text-muted-foreground"><summary className="cursor-pointer">Fonte dos valores</summary><p className="mt-2">Valores: TACO 4ª ed., NEPA/UNICAMP e USDA FoodData Central. Produtos americanos mantêm os nomes do rótulo; fórmulas podem variar por país. Sem quantidade indicada: 100 g por alimento e 5 g para açúcar. Leite sem especificação: integral. Confira as quantidades e o rótulo antes de registrar.</p></details>
     </section>
   );
 }
