@@ -129,17 +129,17 @@ export function interpretarItem(item: string, medidas?: Medidas): ItemFalado {
   }
   // Contagens: "dois pães", "duas bandas de pão" (banda = metade), "uma banana média".
   let unidades: number | undefined;
-  let medida: string | undefined;
+  let medidaId: string | undefined;
   if (gramas == null && !medidaOriginal) {
     const c = t.match(/\s(\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|quatro|cinco|meio|meia)\s+(?:(bandas?|fatias?|unidades?)\s+(?:de\s+)?)?(?=[a-z])/);
     if (c) {
       unidades = NUM_MEDIDA[c[1]!] ?? Number(c[1]!.replace(",", "."));
-      medida = c[2] ? c[2].replace(/s$/, "").replace(/^unidade$/, "unidade") : "unidade";
+      medidaId = c[2] ? c[2].replace(/s$/, "").replace(/^unidade$/, "unidade") : "unidade";
       t = t.replace(c[0], " ");
     }
     const tam = t.match(/\s(pequen[oa]s?|medi[oa]s?|grandes?)\s/);
     if (tam) {
-      medida = /^p/.test(tam[1]!) ? "pequena" : /^m/.test(tam[1]!) ? "media" : "grande";
+      medidaId = /^p/.test(tam[1]!) ? "pequena" : /^m/.test(tam[1]!) ? "media" : "grande";
       unidades ??= 1;
       t = t.replace(tam[0], " ");
     }
@@ -151,7 +151,7 @@ export function interpretarItem(item: string, medidas?: Medidas): ItemFalado {
     .join(" ");
   const r: ItemFalado = { termo, gramas };
   if (medidaOriginal) r.medidaOriginal = medidaOriginal;
-  if (unidades && unidades > 0 && medida) { r.unidades = unidades; r.medida = medida; }
+  if (unidades && unidades > 0 && medidaId) { r.unidades = unidades; r.medida = medidaId; }
   return r;
 }
 
