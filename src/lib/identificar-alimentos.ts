@@ -1,7 +1,7 @@
 import { normalizar, type AlimentoTaco } from "./diario";
 
 // Marcas conhecidas reconhecidas mesmo sem a palavra "marca"; a forma canônica é a do rótulo.
-const MARCAS_CONHECIDAS: Record<string, string> = { traquinas: "Trakinas", trakinas: "Trakinas" };
+const MARCAS_CONHECIDAS: Record<string, string> = { traquinas: "Trakinas", trakinas: "Trakinas", "sonho de valsa": "Sonho de Valsa" };
 
 export function consultaAlimento(termo: string) {
   const t = normalizar(termo);
@@ -18,7 +18,7 @@ export function ordenarAlimentos(termo: string, alimentos: AlimentoTaco[]) {
   const { alimento, marca } = consultaAlimento(termo);
   const preferencias: Record<string, string> = {
     leite: "leite de vaca integral", cafe: "cafe infusao", acucar: "acucar refinado",
-    cuscuz: "cuscuz de milho cozido", "queijo minas": "queijo minas frescal",
+    cuscuz: "cuscuz de milho cozido", pao: "pao trigo frances", banana: "banana prata", ovo: "ovo de galinha inteiro cozido", "queijo minas": "queijo minas frescal",
   };
   const score = (a: AlimentoTaco) => {
     const d = normalizar(a.descricao).replace(/[.,]/g, "").replace(/\s+/g, " ");
@@ -52,4 +52,24 @@ export function nomeAlimento(descricao: string) {
 
 export function porcaoEstimada(termo: string) {
   return consultaAlimento(termo).alimento === "acucar" ? 5 : 100;
+}
+/** Medidas caseiras por alimento (pesos médios aproximados; sempre exibidos como estimativa). */
+export type MedidaCaseira = { id: string; rotulo: string; gramas: number };
+const MEDIDAS: [RegExp, MedidaCaseira[]][] = [
+  [/^pao(?: frances)?$/, [{ id: "unidade", rotulo: "unidade (50 g)", gramas: 50 }, { id: "banda", rotulo: "banda/metade (25 g)", gramas: 25 }]],
+  [/^pao de forma$|^pao integral$/, [{ id: "fatia", rotulo: "fatia (25 g)", gramas: 25 }]],
+  [/^banana/, [{ id: "pequena", rotulo: "pequena (50 g)", gramas: 50 }, { id: "media", rotulo: "média (75 g)", gramas: 75 }, { id: "grande", rotulo: "grande (100 g)", gramas: 100 }]],
+  [/^maca$/, [{ id: "pequena", rotulo: "pequena (100 g)", gramas: 100 }, { id: "media", rotulo: "média (130 g)", gramas: 130 }, { id: "grande", rotulo: "grande (180 g)", gramas: 180 }]],
+  [/^laranja/, [{ id: "pequena", rotulo: "pequena (120 g)", gramas: 120 }, { id: "media", rotulo: "média (160 g)", gramas: 160 }, { id: "grande", rotulo: "grande (220 g)", gramas: 220 }]],
+  [/^ovos?/, [{ id: "unidade", rotulo: "unidade (50 g)", gramas: 50 }]],
+  [/^queijo/, [{ id: "fatia", rotulo: "fatia (20 g)", gramas: 20 }]],
+  [/^(?:bombom )?sonho de valsa$|^bombom$/, [{ id: "unidade", rotulo: "unidade (21,5 g)", gramas: 21.5 }]],
+];
+export function medidasAlimento(termo: string): MedidaCaseira[] {
+  const { alimento, marca } = consultaAlimento(termo);
+  const chave = [alimento, marca].filter(Boolean).join(" ").trim();
+  const lista = MEDIDAS.find(([re]) => re.test(chave) || re.test(alimento) || (!!marca && re.test(marca)))?.[1] ?? [];
+  if (!lista.length) return [];
+  // "unidade" é sinônimo do tamanho médio para frutas.
+  return lista.some(m => m.id === "unidade") || !lista.some(m => m.id === "media") ? lista : [...lista, { ...lista.find(m => m.id === "media")!, id: "unidade", rotulo: "unidade (média)" }];
 }

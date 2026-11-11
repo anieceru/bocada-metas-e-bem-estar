@@ -43,7 +43,20 @@ const MARCADOR_REFEICAO = /(?:^|[.,;]\s*|\b(?:no|na|para o|para a)\s+)(cafe da m
 
 /** Medidas caseiras → gramas/ml. "copo" usa o tamanho do copo da pessoa (padrão 200 ml). */
 export type Medidas = { copoMl?: number | undefined };
-const NUM_MEDIDA: Record<string, number> = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, meio: 0.5, meia: 0.5 };
+const NUM_MEDIDA: Record<string, number> = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, cinco: 5, meio: 0.5, meia: 0.5 };
+const SINGULAR: Record<string, string> = { paes: "pao", bananas: "banana", ovos: "ovo", macas: "maca", laranjas: "laranja", bombons: "bombom" };
+
+/** A fala menciona uma refeição ("no almoço", "café da manhã: ...")? */
+export function mencionaRefeicao(texto: string) {
+  return new RegExp(MARCADOR_REFEICAO.source).test(normalizar(texto));
+}
+
+/** Sugere a refeição pelo horário quando a pessoa não diz qual foi. */
+export function refeicaoPorHorario(refeicoes: string[], data = new Date()) {
+  const h = data.getHours() + data.getMinutes() / 60;
+  const alvo = h < 10.5 ? "Café da manhã" : h < 15 ? "Almoço" : h < 18.5 ? "Lanches" : "Jantar";
+  return refeicoes.includes(alvo) ? alvo : refeicoes[0] ?? "Lanches";
+}
 const MEDIDA_G = (medida: string, medidas?: Medidas): number | null => {
   if (/^copos?$/.test(medida)) return medidas?.copoMl ?? 200;
   if (/^xicaras?$/.test(medida)) return 200;
@@ -57,7 +70,7 @@ const MEDIDA_G = (medida: string, medidas?: Medidas): number | null => {
 export function interpretarFrase(texto: string, refeicaoInicial: string, medidas?: Medidas) {
   const frase = normalizar(texto);
   const marcadores = [...frase.matchAll(MARCADOR_REFEICAO)];
-  const resultado: { termo: string; gramas: number | null; refeicao: string; medidaOriginal?: string }[] = [];
+  const resultado: (ItemFalado & { refeicao: string })[] = [];
   let inicio = 0;
   let refeicao = refeicaoInicial;
   for (const marcador of marcadores) {
@@ -91,7 +104,8 @@ export function dividirItens(texto: string): string[] {
 }
 
 /** Extrai gramas (g ou ml, tratados 1:1; medidas caseiras convertidas) e os termos de busca de um item. */
-export function interpretarItem(item: string, medidas?: Medidas): { termo: string; gramas: number | null; medidaOriginal?: string } {
+export type ItemFalado = { termo: string; gramas: number | null; medidaOriginal?: string; unidades?: number; medida?: string };
+export function interpretarItem(item: string, medidas?: Medidas): ItemFalado {
   let gramas: number | null = null;
   let medidaOriginal: string | undefined;
   let t = ` ${normalizar(item)} `;
@@ -113,11 +127,32 @@ export function interpretarItem(item: string, medidas?: Medidas): { termo: strin
     if (n > 0) gramas = n;
     t = t.replace(m[0], " ");
   }
+  // Contagens: "dois pães", "duas bandas de pão" (banda = metade), "uma banana média".
+  let unidades: number | undefined;
+  let medida: string | undefined;
+  if (gramas == null && !medidaOriginal) {
+    const c = t.match(/\s(\d+(?:[.,]\d+)?|um|uma|dois|duas|tres|quatro|cinco|meio|meia)\s+(?:(bandas?|fatias?|unidades?)\s+(?:de\s+)?)?(?=[a-z])/);
+    if (c) {
+      unidades = NUM_MEDIDA[c[1]!] ?? Number(c[1]!.replace(",", "."));
+      medida = c[2] ? c[2].replace(/s$/, "").replace(/^unidade$/, "unidade") : "unidade";
+      t = t.replace(c[0], " ");
+    }
+    const tam = t.match(/\s(pequen[oa]s?|medi[oa]s?|grandes?)\s/);
+    if (tam) {
+      medida = /^p/.test(tam[1]!) ? "pequena" : /^m/.test(tam[1]!) ? "media" : "grande";
+      unidades ??= 1;
+      t = t.replace(tam[0], " ");
+    }
+  }
   const termo = t
     .split(" ")
     .filter((w) => w && !PALAVRAS_VAZIAS.has(w) && !/^\d/.test(w))
+    .map((w) => SINGULAR[w] ?? w)
     .join(" ");
-  return medidaOriginal ? { termo, gramas, medidaOriginal } : { termo, gramas };
+  const r: ItemFalado = { termo, gramas };
+  if (medidaOriginal) r.medidaOriginal = medidaOriginal;
+  if (unidades && unidades > 0 && medida) { r.unidades = unidades; r.medida = medida; }
+  return r;
 }
 
 export function calcularNutrientes(a: AlimentoTaco, gramas: number) {
