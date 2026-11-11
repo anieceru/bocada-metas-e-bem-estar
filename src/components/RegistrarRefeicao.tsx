@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-   calcularNutrientes, hojeISO, interpretarFrase, normalizar, referenciaAlimento, type AlimentoTaco,
+   calcularNutrientes, hojeISO, interpretarFrase, refeicaoPorHorario, normalizar, referenciaAlimento, type AlimentoTaco,
 } from "@/lib/diario";
 import { verificarAlertaMetas } from "@/lib/notificacoes.functions";
-import { consultaAlimento, escolherAlimento, nomeAlimento, nutrientesDisponiveis, ordenarAlimentos, porcaoEstimada } from "@/lib/identificar-alimentos";
+import { consultaAlimento, escolherAlimento, nomeAlimento, nutrientesDisponiveis, ordenarAlimentos, porcaoEstimada, medidasAlimento } from "@/lib/identificar-alimentos";
 import { AutorizacaoIA, useAutorizacaoIA } from "./AutorizacaoIA";
 import { interpretarDescricaoIA } from "@/lib/interpretacao-ia.functions";
 import type { ItemInterpretado } from "@/lib/interpretacao-ia";
@@ -28,8 +28,22 @@ function criarReconhecimento(): SR | null {
   return C ? new C() : null;
 }
 
-type Item = { termo: string; gramas: string; refeicao: string; opcoes: AlimentoTaco[]; escolhido: string | null; aviso?: string | undefined };
+type Item = { termo: string; gramas: string; qtd: string; medida: string; refeicao: string; opcoes: AlimentoTaco[]; escolhido: string | null; aviso?: string | undefined };
 const chave = (a: AlimentoTaco) => `${a.fonte ?? "taco"}:${a.id}`;
+const num = (v: string) => Number(v.replace(",", "."));
+function gramasDe(termo: string, qtd: string, medida: string) {
+  const n = num(qtd);
+  if (medida === "g") return qtd;
+  const m = medidasAlimento(termo).find(x => x.id === medida);
+  return m && n > 0 ? String(Math.round(n * m.gramas * 10) / 10) : "";
+}
+function medidaInicial(p: ItemInterpretado) {
+  const ms = medidasAlimento(p.termo);
+  const m = p.unidades && p.gramas == null ? ms.find(x => x.id === p.medida) ?? ms.find(x => x.id === "unidade") : undefined;
+  if (m && p.unidades) return { qtd: String(p.unidades).replace(".", ","), medida: m.id, gramas: String(Math.round(p.unidades * m.gramas * 10) / 10), aviso: `${String(p.unidades).replace(".", ",")} × ${m.rotulo}: peso médio estimado. Ajuste se necessário.` };
+  const g = String(p.gramas ?? porcaoEstimada(p.termo));
+  return { qtd: g, medida: "g", gramas: g, aviso: undefined };
+}
 
 async function buscar(termo: string): Promise<AlimentoTaco[]> {
   const { alimento, marca } = consultaAlimento(termo);
@@ -77,6 +91,8 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
   const [origem, setOrigem] = useState<"voz" | "digitado">("digitado");
   const [salvando, setSalvando] = useState(false);
   const [refeicao, setRefeicao] = useState(refeicaoInicial ?? refeicoes[0] ?? "Lanches");
+  useEffect(() => { if (!refeicaoInicial) setRefeicao(refeicaoPorHorario(refeicoes)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const pararPedido = useRef(false);
   const [buscando, setBuscando] = useState(false);
   const [entendendo, setEntendendo] = useState(false);
   const rec = useRef<SR | null>(null);
@@ -121,7 +137,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
     const primeira = partes[0];
     if (primeira) setRefeicao(primeira.refeicao);
     setBuscando(true);
-    setItens(partes.map(p => ({ termo: p.termo, gramas: String(p.gramas ?? porcaoEstimada(p.termo)), refeicao: p.refeicao, opcoes: [], escolhido: null })));
+    setItens(partes.map(p => { const m = medidaInicial(p); return { termo: p.termo, gramas: m.gramas, qtd: m.qtd, medida: m.medida, refeicao: p.refeicao, opcoes: [], escolhido: null }; }));
     try {
     await Promise.all(
       partes.map(async (p, i) => {
@@ -130,7 +146,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
         const { marca } = consultaAlimento(p.termo);
          const { escolhido: a, generico } = escolherAlimento(p.termo, opcoes);
          const baseAviso = generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : p.termo === "acucar" && p.gramas == null ? "Açúcar estimado: 1 colher de chá rasa (5 g). Ajuste à quantidade usada." : p.termo === "leite" ? "Leite integral padrão: valores estimados. Confira com o rótulo do seu leite." : undefined;
-         const aviso = [p.quantidadeOriginal ? `Quantidade descrita: ${p.quantidadeOriginal}. Confira a conversão em gramas.` : undefined, p.medidaOriginal ? `Medida caseira: ${p.medidaOriginal} ≈ ${p.gramas} g. Ajuste se necessário.` : undefined, baseAviso].filter(Boolean).join(" ") || undefined;
+         const aviso = [medidaInicial(p).aviso, p.medidaOriginal || medidaInicial(p).aviso ? undefined : p.quantidadeOriginal ? `Quantidade descrita: ${p.quantidadeOriginal}. Confira a conversão em gramas.` : undefined, p.medidaOriginal ? `Medida caseira: ${p.medidaOriginal} ≈ ${p.gramas} g. Ajuste se necessário.` : undefined, baseAviso].filter(Boolean).join(" ") || undefined;
          setItens(arr => arr.map((it, j) => j === i ? { ...it, opcoes, escolhido: a ? chave(a) : null, aviso } : it));
       }),
     );
@@ -141,14 +157,17 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
     }
   }
 
+  // Grava até a pessoa tocar de novo: pausas não encerram o ditado.
   function ouvir() {
-    if (ouvindo) return rec.current?.stop();
+    if (ouvindo) { pararPedido.current = true; return rec.current?.stop(); }
+    pararPedido.current = false;
     const r = criarReconhecimento();
     if (!r) return setModo("texto");
     r.lang = "pt-BR";
     r.interimResults = true;
-    r.continuous = false;
+    r.continuous = true;
     finalRef.current = "";
+    let acumulado = "";
     r.onresult = (e) => {
       let fin = "", tmp = "";
       for (let i = 0; i < e.results.length; i++) {
@@ -157,19 +176,24 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
         if (!res || !transcript) continue;
         if (res.isFinal) fin += transcript; else tmp += transcript;
       }
-      finalRef.current = fin;
-      setParcial(fin + tmp);
+      finalRef.current = `${acumulado} ${fin}`.trim();
+      setParcial(`${finalRef.current} ${tmp}`.trim());
     };
     r.onerror = (e) => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         toast("Sem acesso ao microfone. Você pode digitar.");
+        pararPedido.current = true;
         setModo("texto");
       }
     };
     r.onend = () => {
+      if (!pararPedido.current) {
+        acumulado = finalRef.current;
+        try { r.start(); return; } catch { /* segue para encerrar */ }
+      }
       setOuvindo(false);
       const frase = finalRef.current.trim();
-      if (frase) interpretar(frase, "voz"); // sem botão de enviar: processa ao terminar de falar
+      if (frase) interpretar(frase, "voz"); // processa quando a pessoa toca em parar
     };
     rec.current = r;
     setParcial("");
@@ -184,7 +208,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
     catch { return void toast.error("Não foi possível buscar alimentos. Tente de novo."); }
     const { marca } = consultaAlimento(termo);
     const { escolhido: a, generico } = escolherAlimento(termo, opcoes);
-    setItens((arr) => arr.map((it, j) => (j === i ? { ...it, termo, opcoes, escolhido: a ? chave(a) : null, aviso: generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : undefined } : it)));
+    setItens((arr) => arr.map((it, j) => (j === i ? { ...it, termo, ...(medidasAlimento(termo).some(m => m.id === it.medida) ? {} : { medida: "g", qtd: it.gramas }), opcoes, escolhido: a ? chave(a) : null, aviso: generico ? `Marca ${marca} não encontrada. Usando queijo Minas frescal padrão como estimativa; os valores não são da marca ${marca}.` : marca && !a ? `Marca ${marca} não encontrada. Escolha uma alternativa apenas se quiser usar valores genéricos.` : undefined } : it)));
   }
 
   async function salvar() {
@@ -231,7 +255,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
           >
             {ouvindo ? <MicOff className="h-8 w-8" aria-hidden /> : <Mic className="h-8 w-8" aria-hidden />}
           </Button>
-          <p className="mt-3 text-sm font-medium">{ouvindo ? "Ouvindo… fale o que comeu" : "Toque e diga o que você comeu"}</p>
+          <p className="mt-3 text-sm font-medium">{ouvindo ? "Ouvindo… toque de novo quando terminar" : "Toque e diga o que você comeu"}</p>
           <p className="mt-1 text-xs text-muted-foreground">Ex.: "150 gramas de arroz, feijão e uma banana"</p>
           {parcial && <p className="mt-3 rounded-xl bg-muted p-3 text-sm">“{parcial}”</p>}
           <Button type="button" variant="ghost" onClick={() => setModo("texto")} className="mt-3 gap-1.5 text-sm text-primary">
@@ -275,7 +299,7 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
                 {it.opcoes.length === 0 ? (
                   <p className="mt-2 text-xs text-muted-foreground">{buscando ? "Buscando…" : "Nada encontrado. Tente outra palavra, marca ou nome do rótulo."}</p>
                 ) : (
-                  <div className="mt-2 grid grid-cols-[1fr_5.5rem] gap-2">
+                  <div className="mt-2 space-y-2">
                     <select
                       aria-label="Alimento"
                       value={it.escolhido ?? ""}
@@ -285,10 +309,14 @@ export function RegistrarRefeicao({ userId, dia = hojeISO(), refeicoes = ["Café
                       <option value="" disabled>Escolha um alimento</option>
                        {it.opcoes.map((o) => <option key={chave(o)} value={chave(o)}>{nomeAlimento(o.descricao)}{o.marca ? ` · ${o.marca}` : ""}</option>)}
                     </select>
-                    <div className="flex items-center gap-1">
-                      <Input aria-label="Quantidade em gramas" inputMode="decimal" value={it.gramas} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, gramas: e.target.value } : x)))} className="h-9" />
-                      <span className="text-xs text-muted-foreground">g</span>
+                    <div className="grid grid-cols-[5rem_1fr] gap-2">
+                      <Input aria-label="Quantidade" inputMode="decimal" value={it.qtd} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, qtd: e.target.value, gramas: gramasDe(x.termo, e.target.value, x.medida) } : x)))} className="h-9" />
+                      <select aria-label="Medida" value={it.medida} onChange={(e) => setItens(itens.map((x, j) => { if (j !== i) return x; const medida = e.target.value; const qtd = medida === "g" ? x.gramas : x.medida === "g" ? "1" : x.qtd; return { ...x, medida, qtd, gramas: gramasDe(x.termo, qtd, medida) }; }))} className="h-9 min-w-0 rounded-md border border-input bg-background px-2 text-sm">
+                        <option value="g">gramas (g)</option>
+                        {medidasAlimento(it.termo).map(m => <option key={m.id} value={m.id}>{m.rotulo}</option>)}
+                      </select>
                     </div>
+                    {it.medida !== "g" && it.gramas && <p className="text-xs text-muted-foreground">≈ {it.gramas.replace(".", ",")} g (peso médio estimado)</p>}
                   </div>
                 )}
                 {it.aviso && <p className="mt-2 text-xs text-estado-estimativa">{it.aviso}</p>}
