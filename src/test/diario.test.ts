@@ -51,7 +51,7 @@ describe("diário", () => {
   });
   it("extrai gramas e termo", () => {
     expect(interpretarItem("150 gramas de arroz")).toEqual({ termo: "arroz", gramas: 150 });
-    expect(interpretarItem("uma banana")).toEqual({ termo: "banana", gramas: null });
+    expect(interpretarItem("uma banana")).toEqual({ termo: "banana", gramas: null, unidades: 1, medida: "unidade" });
   });
   it("calcula nutrientes proporcionais aos gramas", () => {
     const a = { id: 1, descricao: "x", kcal: 128, proteina_g: 2.5, lipideos_g: 0.2, carboidrato_g: 28 };
