@@ -85,6 +85,13 @@
       "when": 1794349515602,
       "tag": "0011_alimentos_brasil_trakinas",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794356088988,
+      "tag": "0012_bombom_sonho_de_valsa",
+      "breakpoints": true
     }
   ]
 }
